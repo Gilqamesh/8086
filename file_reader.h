@@ -1,12 +1,11 @@
 #pragma once
 
 #include <stdbool.h>
-
-typedef unsigned char byte;
+#include "defs.h"
 
 struct file_reader // circular buffer data structure for storing read bytes from a file
 {
-    byte  buffer[1024];
+    byte  buffer[16];
     int   available;
     int   head;
     int   tail;
@@ -28,4 +27,4 @@ int file_reader__available(struct file_reader *self);
 int file_reader__read(struct file_reader *self, int size);
 
 // @returns the byte in the stream and advances the file pointer by one
-bool file_reader__advance(struct file_reader* self, byte* out);
+bool file_reader__eat_byte(struct file_reader* self, byte* out);

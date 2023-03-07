@@ -19,37 +19,53 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    printf("; %s disassembly:\nbits 16\n", argv[1]);
     while (file_reader__read(&reader, file_reader__available(&reader)) > 0) {
-        while (file_reader__size(&reader) > 0) {
+        while (file_reader__size(&reader) >= 2) {
             byte first_byte;
-            if (!file_reader__advance(&reader, &first_byte)) {
+            byte second_byte;
+            if (!file_reader__eat_byte(&reader, &first_byte)) {
                 fprintf(stderr, "Something unexpected happened");
                 exit(1);
             }
-
-            int opcode  = first_byte >> 2;
-            int d       = (first_byte >> 1) & 1;
-            int w       = first_byte & 1;
-            
-            // process first byte of the 16-bit 8086 instruction
-
-            byte second_byte;
-            if (!file_reader__advance(&reader, &second_byte)) {
+            if (!file_reader__eat_byte(&reader, &second_byte)) {
                 fprintf(stderr, "Parse error, expected second byte");
                 exit(1);
             }
 
-            int mod  = (second_byte >> 6) & 3;
-            int reg  = (second_byte >> 3) & 7;
-            int rm   = second_byte & 7;
+            int opcode  = first_byte >> 2;
+            int is_dest = (first_byte >> 1) & 1;
+            int is_wide = first_byte & 1;
+            int mod = (second_byte >> 6) & 3;
+            int reg = (second_byte >> 3) & 7;
+            int r_m = second_byte & 7;
 
-            // process second byte of the 16-bit 8086 instruction
+            const char* instruction = opcode_to_instruction(opcode);
+            const char* dst_registry;
+            const char* src_registry;
+            if (is_wide) {
+                dst_registry = reg_to_word_registry(reg);
+                src_registry = reg_to_word_registry(r_m);
 
-            printf("opcode: %d, d: %d, w: %d, mod: %d, reg: %d, rm: %d\n", opcode, d, w, mod, reg, rm);
+            } else {
+                dst_registry = reg_to_byte_registry(reg);
+                src_registry = reg_to_byte_registry(r_m);
+            }
+
+            if (is_dest == 0) {
+                const char* tmp = src_registry;
+                src_registry = dst_registry;
+                dst_registry = tmp;
+            }
+
+            if (mod == REGISTER_MODE_NO_DISPLACEMENT) {
+            } else {
+                assert(false && "not implemented mod field");
+            }
+
+            printf("%s %s, %s\n", instruction, dst_registry, src_registry);
         }
     }
-
-    printf("\n");
 
     file_reader__destroy(&reader);
 }

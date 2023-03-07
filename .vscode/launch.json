@@ -4,8 +4,8 @@
             "name": "mynasm debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/a.out",
-            "args": ["listing_0037_single_register_mov.asm"],
+            "program": "${workspaceFolder}/mynasm",
+            "args": ["${workspaceFolder}/asm/listing_0038_many_register_mov"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}"
         }

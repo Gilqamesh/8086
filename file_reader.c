@@ -61,7 +61,7 @@ int file_reader__read(struct file_reader *self, int size) {
     return read_amount;
 }
 
-bool file_reader__advance(struct file_reader* self, byte* out) {
+bool file_reader__eat_byte(struct file_reader* self, byte* out) {
     if (file_reader__size(self) == 0) {
         return false;
     }
