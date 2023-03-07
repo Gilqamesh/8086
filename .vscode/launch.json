@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "mynasm debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/a.out",
+            "args": ["listing_0037_single_register_mov.asm"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}"
+        }
+    ]
+}
