@@ -3,26 +3,33 @@
 #include <unistd.h>
 #include <stdio.h>
 
-bool file_reader__create(struct file_reader* self, const char* filename) {
+void file_reader__create(struct file_reader* self, const char* filename, file_reader_error error_handler) {
     self->available = sizeof(self->buffer);
     self->head      = 0;
     self->tail      = 0;
     self->fd        = open(filename, O_RDONLY);
+    self->eof       = false;
 
-    return self->fd != -1;
-}
-
-void file_reader__destroy(struct file_reader* self) {
-    if (self->fd != -1) {
-        close(self->fd);
+    if (self->fd == -1) {
+        perror("open");
+        error_handler("in 'file_reader__create'", FILE_READER_ERROR_FATAL);
     }
 }
 
-int file_reader__size(struct file_reader* self) {
+void file_reader__destroy(struct file_reader* self) {
+    assert(self->fd != -1 && "in 'file_reader__destroy': first call 'file_reader__create'");
+    close(self->fd);
+}
+
+bool file_reader__eof_reached(struct file_reader* self) {
+    return self->eof;
+}
+
+static int file_reader__size(struct file_reader* self) {
     return sizeof(self->buffer) - self->available;
 }
 
-int file_reader__available(struct file_reader *self) {
+static inline int file_reader__available(struct file_reader *self) {
     return self->available;
 }
 
@@ -46,47 +53,39 @@ static byte file_reader_read_byte(struct file_reader* self) {
     return byte;
 }
 
-int file_reader__read(struct file_reader *self, int size, file_reader_error error_handler) {
+static int file_reader__read(struct file_reader *self, int size, file_reader_error error_handler) {
     if (file_reader__available(self) < size) {
-        error_handler("file reader: full, can't read");
-        return 0;
+        error_handler("in 'file_reader__read': cannot read size much", FILE_READER_ERROR_WARN);
+        size = file_reader__available(self);
     }
 
-    byte  buffer[1024];
+    byte  buffer[sizeof(self->buffer)];
     int   read_amount = read(self->fd, buffer, size);
     if (read_amount == -1) {
         perror("read");
-        error_handler("in file reader");
+        error_handler("in 'file_reader__read'", FILE_READER_ERROR_FATAL);
     }
 
     for (int buffer_index = 0; buffer_index < read_amount; ++buffer_index) {
         file_reader_store_byte(self, buffer[buffer_index]);
     }
 
-    // can be -1
     return read_amount;
 }
 
-bool file_reader__eat_byte(struct file_reader* self, byte* out) {
+void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_error error_handler) {
+    if (file_reader__eof_reached(self)) {
+        error_handler("in 'file_reader__read_byte': already reached end of file, nothing to read", FILE_READER_ERROR_FATAL);
+        return ;
+    }
+
     if (file_reader__size(self) == 0) {
-        return false;
+        file_reader__read(self, file_reader__available(self), error_handler);
     }
 
     *out = file_reader_read_byte(self);
-    return true;
-}
 
-bool file_reader__ensure_byte(struct file_reader* self, byte* out, file_reader_error error_handler) {
-    if (file_reader__size(self) == 0) {
-        int read_amount = file_reader__read(self, 1, error_handler);
-        if (read_amount == -1) {
-            return false;
-        }
-        if (read_amount == 0) {
-            // nothing more to read
-            return false;
-        }
+    if (file_reader__read(self, 1, error_handler) == 0) {
+        self->eof = true;
     }
-
-    return file_reader__eat_byte(self, out);
 }
