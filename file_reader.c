@@ -42,6 +42,18 @@ static void file_reader_store_byte(struct file_reader* self, byte byte) {
     }
 }
 
+static void file_reader_unread_byte(struct file_reader* self, byte byte) {
+    if (self->tail == 0) {
+        self->tail = sizeof(self->buffer) - 1;
+    } else {
+        --self->tail;
+    }
+
+    --self->available;
+
+    self->buffer[self->tail] = byte;
+}
+
 static byte file_reader_read_byte(struct file_reader* self) {
     byte byte = self->buffer[self->tail++];
     ++self->available;
@@ -88,4 +100,31 @@ void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_err
     if (file_reader__read(self, 1, error_handler) == 0) {
         self->eof = true;
     }
+}
+
+bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler) {
+    if (file_reader__size(self) == 0) {
+        file_reader__read(self, file_reader__available(self), error_handler);
+    }
+
+    bool ret = false;
+    if (file_reader__size(self)) {
+        *out = file_reader_read_byte(self);
+        ret = true;
+    }
+
+    if (file_reader__read(self, 1, error_handler) == 0) {
+        self->eof = true;
+    }
+
+    return ret;
+}
+
+void file_reader__unread_byte(struct file_reader* self, byte c, file_reader_error error_handler) {
+    if (file_reader__available(self) == 0) {
+        error_handler("in 'file_reader__unread_byte': not enough space left to store byte back", FILE_READER_ERROR_FATAL);
+        return ;
+    }
+
+    file_reader_unread_byte(self, c);
 }

@@ -5,6 +5,7 @@
         "fstream": "c",
         "unistd.h": "c",
         "stdio.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "file_reader.h": "c"
     }
 }

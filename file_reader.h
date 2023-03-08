@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include "defs.h"
+#include <stdlib.h>
 
 struct file_reader // circular buffer data structure for storing read bytes from a file
 {
@@ -27,5 +28,11 @@ void file_reader__destroy(struct file_reader* self);
 // @returns true if end of file has been reached
 bool file_reader__eof_reached(struct file_reader* self);
 
-// @returns the byte in the stream and advances the file pointer by one
+// @brief reads and stores out a byte
 void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_error error_handler);
+// @brief if there is a byte reads and stores out
+// @returns true on read
+bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler);
+
+// @brief unreads and unstores a byte
+void file_reader__unread_byte(struct file_reader* self, byte c, file_reader_error error_handler);

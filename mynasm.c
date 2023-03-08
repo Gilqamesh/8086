@@ -5,6 +5,7 @@
 #include <string.h>
 #include <assert.h>
 #include "file_reader.h"
+#include "opcode.h"
 
 void error_handler(const char* msg, enum file_reader_error level) {
     switch (level) {
@@ -21,118 +22,82 @@ void error_handler(const char* msg, enum file_reader_error level) {
     }
 }
 
-void dispatch_by_first_byte(byte first_byte, struct file_reader* reader) {
-    if ((first_byte >> 2) == 0b100010) {
-        // Register/memory to/from register
-        // mov instruction
-        // 100010 d w    mod reg r/m    (DISP-LO)    (DISP-HI)
-        printf("%s", "mov");
-        printf(" ");
-        int is_dest = (first_byte >> 1) & 1;
-        int is_wide = first_byte & 1;
-
-        byte second_byte;
-        file_reader__read_byte(reader, &second_byte, error_handler);
-        int mod = (second_byte >> 6) & 3;
-        int reg = (second_byte >> 3) & 7;
-        int r_m = second_byte & 7;
-
-        switch (mod) {
-            case MEMORY_MODE_NO_DISPLACEMENT: {
-                if (r_m == BP) { // direct address, it has a 16-bit displacement, so check next 2 bytes
-                    word data = 0;
-                    file_reader__read_byte(reader, (byte*)&data, error_handler);
-                    file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
-
-                    if (is_dest == 1) {
-                        printf("%s, [%u]", reg_to_word(reg, is_wide), data);
-                        printf(" ");
-                    } else {
-                        printf("[%u], %s", data, reg_to_word(reg, is_wide));
-                        printf(" ");
-                    }
-                } else {
-                    if (is_dest == 1) {
-                        printf("%s", reg_to_word(reg, is_wide));
-                        printf(",");
-                        printf("[%s]", effective_address_to_word(r_m));
-                        printf(" ");
-                    } else {
-                        printf("[%s]", effective_address_to_word(r_m));
-                        printf(",");
-                        printf("%s", reg_to_word(reg, is_wide));
-                        printf(" ");
-                    }
-                }
-            } break ;
-            case MEMORY_MODE_8_BIT_DISPLACEMENT: {
-                byte displacement;
-                file_reader__read_byte(reader, &displacement, error_handler);
-            } break ;
-            case MEMORY_MODE_16_BIT_DISPLACEMENT: {
-                word data = 0;
-                file_reader__read_byte(reader, (byte*)&data, error_handler);
-                file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
-            } break ;
-            case REGISTER_MODE_NO_DISPLACEMENT: {
-                const char* dst_registry;
-                const char* src_registry;
-
-                dst_registry = reg_to_word(reg, is_wide);
-                // depends on reg which formula to choose and on mod the amount of displacement
-                src_registry = reg_to_word(r_m, is_wide);
-
-                if (is_dest == 0) {
-                    const char* tmp = src_registry;
-                    src_registry = dst_registry;
-                    dst_registry = tmp;
-                }
-
-                printf("%s, %s", dst_registry, src_registry);
-            } break ;
-            default: assert(false);
+void dispatch_instruction(struct file_reader* reader) {
+    typedef void (*opcode_handler)(byte, byte, struct file_reader*, file_reader_error);
+    typedef opcode_handler opcode_handlers16[16];
+    static const opcode_handlers16 opcode_handlers[16] = {
+        {
+            opcode__add, opcode__add, opcode__add, opcode__add, opcode__add, opcode__add, opcode__push, opcode__pop,
+            opcode__or,  opcode__or,  opcode__or,  opcode__or,  opcode__or,  opcode__or,  opcode__push, opcode__null
+        },
+        {
+            opcode__adc, opcode__adc, opcode__adc, opcode__adc, opcode__adc, opcode__adc, opcode__push, opcode__pop,
+            opcode__sbb, opcode__sbb, opcode__sbb, opcode__sbb, opcode__sbb, opcode__sbb, opcode__push, opcode__pop
+        },
+        {
+            opcode__and, opcode__and, opcode__and, opcode__and, opcode__and, opcode__and, opcode__es, opcode__daa,
+            opcode__sub, opcode__sub, opcode__sub, opcode__sub, opcode__sub, opcode__sub, opcode__cs, opcode__das
+        },
+        {
+            opcode__xor, opcode__xor, opcode__xor, opcode__xor, opcode__xor, opcode__xor, opcode__ss, opcode__aaa,
+            opcode__cmp, opcode__cmp, opcode__cmp, opcode__cmp, opcode__cmp, opcode__cmp, opcode__ds, opcode__aas
+        },
+        {
+            opcode__inc, opcode__inc, opcode__inc, opcode__inc, opcode__inc, opcode__inc, opcode__inc, opcode__inc,
+            opcode__dec, opcode__dec, opcode__dec, opcode__dec, opcode__dec, opcode__dec, opcode__dec, opcode__dec
+        },
+        {
+            opcode__push, opcode__push, opcode__push, opcode__push, opcode__push, opcode__push, opcode__push, opcode__push,
+            opcode__pop,  opcode__pop,  opcode__pop,  opcode__pop,  opcode__pop,  opcode__pop,  opcode__pop,  opcode__pop
+        },
+        {
+            opcode__null, opcode__null, opcode__null, opcode__null, opcode__null, opcode__null, opcode__null, opcode__null,
+            opcode__null, opcode__null, opcode__null, opcode__null, opcode__null, opcode__null, opcode__null, opcode__null
+        },
+        {
+            opcode__jo, opcode__jno, opcode__jb_jnae, opcode__jnb_jae, opcode__je_jz,   opcode__jne_jnz, opcode__jbe_jna, opcode__jnbe_ja,
+            opcode__js, opcode__jns, opcode__jp_jpe,  opcode__jnp_jpo, opcode__jl_jnge, opcode__jnl_jge, opcode__jle_jng, opcode__jnle_jg
+        },
+        {
+            opcode__1000_000x, opcode__1000_000x, opcode__1000_001x, opcode__1000_001x, opcode__test,      opcode__test, opcode__xchg,      opcode__xchg,
+            opcode__mov,       opcode__mov,       opcode__mov,       opcode__mov,       opcode__1000_1100, opcode__lea,  opcode__1000_1110, opcode__1000_1111
+        },
+        {
+            opcode__nop, opcode__xchg, opcode__xchg, opcode__xchg, opcode__xchg,  opcode__xchg, opcode__xchg, opcode__xchg,
+            opcode__cbw, opcode__cwd,  opcode__call, opcode__wait, opcode__pushf, opcode__popf, opcode__sahf, opcode__lahf
+        },
+        {
+            opcode__mov,  opcode__mov,  opcode__mov,  opcode__mov,  opcode__movs, opcode__movs, opcode__cmps, opcode__cmps,
+            opcode__test, opcode__test, opcode__stds, opcode__stds, opcode__lods, opcode__lods, opcode__scas, opcode__scas
+        },
+        {
+            opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov,
+            opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov, opcode__mov
+        },
+        {
+            opcode__null, opcode__null, opcode__ret, opcode__ret, opcode__les, opcode__lds, opcode__1100_0110, opcode__1100_0111,
+            opcode__null, opcode__null, opcode__ret, opcode__ret, opcode__int, opcode__int, opcode__into,      opcode__iret
+        },
+        {
+            opcode__1101_00xx, opcode__1101_00xx, opcode__1101_00xx, opcode__1101_00xx, opcode__aam, opcode__aad, opcode__null, opcode__xlat,
+            opcode__esc,       opcode__esc,       opcode__esc,       opcode__esc,       opcode__esc, opcode__esc, opcode__esc,  opcode__esc
+        },
+        {
+            opcode__loopnz_loopne, opcode__loopz_loope, opcode__loop, opcode__jcxz, opcode__in, opcode__in, opcode__out, opcode__out,
+            opcode__call,          opcode__jmp,         opcode__jmp,  opcode__jmp,  opcode__in, opcode__in, opcode__out, opcode__out
+        },
+        {
+            opcode__lock, opcode__null, opcode__repne_repnz, opcode__rep_repe_repz, opcode__hlt, opcode__cmc, opcode__1111_011x, opcode__1111_011x,
+            opcode__clc,  opcode__stc,  opcode__cli,         opcode__sti,           opcode__cld, opcode__std, opcode__1111_1110, opcode__1111_1111
         }
-        printf("\n");
-    } else if ((first_byte >> 1) == 0b1100011) {
-        // mov instruction
-        // Immediate to register/memory
-        // 1100011 w    mod 0 0 0 r/m    (DISP-LO)    (DISP-HI)    data    data if w = 1
-    } else if ((first_byte >> 4) == 0b1011) {
-        // mov instruction
-        // Immediate to register
-        // 1011 w reg    data    data if w = 1
+    };
 
-        int   is_wide        = (first_byte >> 3) & 1;
-        int   reg            = first_byte & 7;
-        const char *reg_word = reg_to_word(reg, is_wide);
+    byte first_byte;
+    byte second_byte;
+    file_reader__read_byte(reader, &first_byte, error_handler);
+    file_reader__read_byte_opt(reader, &second_byte, error_handler);
 
-        word data = 0;
-        file_reader__read_byte(reader, (byte*)&data, error_handler);
-        if (is_wide) {
-            file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
-        }
-
-        printf("%s %s, %u\n", "mov", reg_word, data);
-    } else if ((first_byte >> 1) == 0b1010000) {
-        // mov instruction
-        // Memory to accumulator
-        // 1010000 w    addr-lo    addr-hi
-    } else if ((first_byte >> 1) == 0b1010001) {
-        // mov instruction
-        // Accumulator to memory
-        // 1010001 w    addr-lo    addr-hi
-    } else if (first_byte == 0b10001110) {
-        // mov instruction
-        // Register/memory to segment register
-        // 10001110    mod 0 SR r/m    (DISP-LO)    (DISP-HI)
-    } else if (first_byte == 0b10001100) {
-        // mov instruction
-        // Segment register to register/memory
-        // 10001100    mod 0 SR r/m    (DISP-LO)    (DISP-HI)
-    } else {
-        fprintf(stderr, "first_byte: %d\n", first_byte);
-        assert(false && "instruction not implemented");
-    }
+    opcode_handlers[first_byte >> 4][first_byte & 0b00001111](first_byte, second_byte, reader, error_handler);
 }
 
 int main(int argc, char **argv)
@@ -148,9 +113,7 @@ int main(int argc, char **argv)
 
     printf("; %s disassembly:\nbits 16\n", argv[1]);
     while (file_reader__eof_reached(&reader) == false) {
-        byte first_byte;
-        file_reader__read_byte(&reader, &first_byte, error_handler);
-        dispatch_by_first_byte(first_byte, &reader);
+        dispatch_instruction(&reader);
     }
 
     file_reader__destroy(&reader);
