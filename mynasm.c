@@ -3,7 +3,25 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "file_reader.h"
+
+
+
+void error_handler(const char* msg, enum file_reader_error level) {
+    switch (level) {
+        case FILE_READER_ERROR_WARN: {
+            fprintf(stdout, msg);
+        } break ;
+        case FILE_READER_ERROR_FATAL: {
+            fprintf(stderr, msg);
+            exit(1);
+        } break ;
+        default: {
+            assert(false && "log_level is not handled");
+        }
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -21,6 +39,23 @@ int main(int argc, char **argv)
 
     printf("; %s disassembly:\nbits 16\n", argv[1]);
     while (file_reader__read(&reader, file_reader__available(&reader)) > 0) {
+        byte first_byte;
+        if (!file_reader__eat_byte(&reader, &first_byte)) {
+            fprintf(stderr, "Something unexpected happened");
+            exit(1);
+        }
+        if (file_reader__size(&reader) == 0) {
+            if (file_reader__read(&reader, file_reader__available(&reader)) <= 0) {
+                fprintf(stderr, "Parse error, byte expected");
+                exit(1);
+            }
+        }
+        byte second_byte;
+        if (!file_reader__eat_byte(&reader, &second_byte)) {
+            fprintf(stderr, "Parse error, expected second byte");
+            exit(1);
+        }
+
         while (file_reader__size(&reader) >= 2) {
             byte first_byte;
             byte second_byte;
