@@ -28,7 +28,7 @@ void mod__register_mode_no_displacement(int w, int d, int reg, int r_m, struct f
     (void)reader;
     (void)error_handler;
 
-    mod__register_mode_no_ea_handlers[d](w, reg, r_m);
+    mod__register_mode_handlers[d](w, reg, r_m);
 }
 
 void mod__immediate_no_displacement(int w, int d, int reg, int r_m, struct file_reader* reader, file_reader_error error_handler) {
@@ -66,5 +66,5 @@ void mod__immediate_register_mode_no_displacement(int w, int d, int reg, int r_m
 
     word immediate;
     file_reader__read_by_type[w](reader, &immediate, error_handler);
-    mod__register_mode_no_ea_immediate_handlers[d](w, reg, r_m, immediate);
+    mod__register_mode_immediate_handlers[d](w, reg, r_m, immediate);
 }
