@@ -1,5 +1,83 @@
 #include "opcode.h"
 
+void mod__no_displacement(int w, int d, int reg, int r_m, struct file_reader* reader, file_reader_error error_handler) {
+    if (r_m == BP) { // direct address, it has a 16-bit displacement, so check next 2 bytes
+        word data = 0;
+        file_reader__read_byte(reader, (byte*)&data, error_handler);
+        file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
+
+        if (d == 1) {
+            printf("%s, [%u]", reg_to_word(reg, w), data);
+            printf(" ");
+        } else {
+            printf("[%u], %s", data, reg_to_word(reg, w));
+            printf(" ");
+        }
+    } else {
+        if (d == 1) {
+            printf("%s", reg_to_word(reg, w));
+            printf(",");
+            printf("[%s]", effective_address_to_word(r_m));
+            printf(" ");
+        } else {
+            printf("[%s]", effective_address_to_word(r_m));
+            printf(",");
+            printf("%s", reg_to_word(reg, w));
+            printf(" ");
+        }
+    }
+}
+
+void mod__8_bit_displacement(int w, int d, int reg, int r_m, struct file_reader* reader, file_reader_error error_handler) {
+    (void)w;
+    (void)d;
+    (void)reg;
+    (void)r_m;
+    (void)reader;
+    (void)error_handler;
+    assert(false && "todo: implement");
+
+    byte displacement;
+    file_reader__read_byte(reader, &displacement, error_handler);
+}
+
+void mod__16_bit_displacement(int w, int d, int reg, int r_m, struct file_reader* reader, file_reader_error error_handler) {
+    (void)w;
+    (void)d;
+    (void)reg;
+    (void)r_m;
+    (void)reader;
+    (void)error_handler;
+    assert(false && "todo: implement");
+    word data = 0;
+    file_reader__read_byte(reader, (byte*)&data, error_handler);
+    file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
+}
+
+void mod__register_mode_no_displacement(int w, int d, int reg, int r_m, struct file_reader* reader, file_reader_error error_handler) {
+    (void)w;
+    (void)d;
+    (void)reg;
+    (void)r_m;
+    (void)reader;
+    (void)error_handler;
+    assert(false && "todo: implement");
+    const char* dst_registry;
+    const char* src_registry;
+
+    dst_registry = reg_to_word(reg, w);
+    // depends on reg which formula to choose and on mod the amount of displacement
+    src_registry = reg_to_word(r_m, w);
+
+    if (d == 0) {
+        const char* tmp = src_registry;
+        src_registry = dst_registry;
+        dst_registry = tmp;
+    }
+
+    printf("%s, %s", dst_registry, src_registry);
+}
+
 void opcode__mov(byte first_byte, byte optional_second_byte, struct file_reader* reader, file_reader_error error_handler) {
     if ((first_byte >> 2) == 0b100010) {
         // Register/memory to/from register
@@ -14,66 +92,21 @@ void opcode__mov(byte first_byte, byte optional_second_byte, struct file_reader*
         int reg = (optional_second_byte >> 3) & 7;
         int r_m = optional_second_byte & 7;
 
-        switch (mod) {
-            case MEMORY_MODE_NO_DISPLACEMENT: {
-                if (r_m == BP) { // direct address, it has a 16-bit displacement, so check next 2 bytes
-                    word data = 0;
-                    file_reader__read_byte(reader, (byte*)&data, error_handler);
-                    file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
+        static void (*const mod_handlers[4])(int, int, int, int, struct file_reader*, file_reader_error) = {
+            mod__no_displacement,
+            mod__8_bit_displacement,
+            mod__16_bit_displacement,
+            mod__register_mode_no_displacement
+        };
 
-                    if (is_dest == 1) {
-                        printf("%s, [%u]", reg_to_word(reg, is_wide), data);
-                        printf(" ");
-                    } else {
-                        printf("[%u], %s", data, reg_to_word(reg, is_wide));
-                        printf(" ");
-                    }
-                } else {
-                    if (is_dest == 1) {
-                        printf("%s", reg_to_word(reg, is_wide));
-                        printf(",");
-                        printf("[%s]", effective_address_to_word(r_m));
-                        printf(" ");
-                    } else {
-                        printf("[%s]", effective_address_to_word(r_m));
-                        printf(",");
-                        printf("%s", reg_to_word(reg, is_wide));
-                        printf(" ");
-                    }
-                }
-            } break ;
-            case MEMORY_MODE_8_BIT_DISPLACEMENT: {
-                byte displacement;
-                file_reader__read_byte(reader, &displacement, error_handler);
-            } break ;
-            case MEMORY_MODE_16_BIT_DISPLACEMENT: {
-                word data = 0;
-                file_reader__read_byte(reader, (byte*)&data, error_handler);
-                file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
-            } break ;
-            case REGISTER_MODE_NO_DISPLACEMENT: {
-                const char* dst_registry;
-                const char* src_registry;
-
-                dst_registry = reg_to_word(reg, is_wide);
-                // depends on reg which formula to choose and on mod the amount of displacement
-                src_registry = reg_to_word(r_m, is_wide);
-
-                if (is_dest == 0) {
-                    const char* tmp = src_registry;
-                    src_registry = dst_registry;
-                    dst_registry = tmp;
-                }
-
-                printf("%s, %s", dst_registry, src_registry);
-            } break ;
-            default: assert(false);
-        }
+        mod_handlers[mod](is_wide, is_dest, reg, r_m, reader, error_handler);
         printf("\n");
+
     } else if ((first_byte >> 1) == 0b1100011) {
         // mov instruction
         // Immediate to register/memory
         // 1100011 w    mod 0 0 0 r/m    (DISP-LO)    (DISP-HI)    data    data if w = 1
+        assert(false && "todo: implement");
     } else if ((first_byte >> 4) == 0b1011) {
         // mov instruction
         // Immediate to register
@@ -93,18 +126,22 @@ void opcode__mov(byte first_byte, byte optional_second_byte, struct file_reader*
         // mov instruction
         // Memory to accumulator
         // 1010000 w    addr-lo    addr-hi
+        assert(false && "todo: implement");
     } else if ((first_byte >> 1) == 0b1010001) {
         // mov instruction
         // Accumulator to memory
         // 1010001 w    addr-lo    addr-hi
+        assert(false && "todo: implement");
     } else if (first_byte == 0b10001110) {
         // mov instruction
         // Register/memory to segment register
         // 10001110    mod 0 SR r/m    (DISP-LO)    (DISP-HI)
+        assert(false && "todo: implement");
     } else if (first_byte == 0b10001100) {
         // mov instruction
         // Segment register to register/memory
         // 10001100    mod 0 SR r/m    (DISP-LO)    (DISP-HI)
+        assert(false && "todo: implement");
     } else {
         fprintf(stderr, "first_byte: %d\n", first_byte);
         assert(false && "instruction not implemented");
