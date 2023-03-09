@@ -5,9 +5,15 @@
 
 struct file_reader;
 
-#define opcode_type(fn) void fn(byte first_byte, byte optional_second_byte, struct file_reader* reader, file_reader_error error_handler)
+typedef void (*opcode_fn)(byte first_byte, struct file_reader* reader, file_reader_error error_handler);
+typedef void (*opcode_cont_fn)(byte first_byte, byte optional_second_byte, struct file_reader* reader, file_reader_error error_handler);
+
+#define opcode_type(fn) void fn(byte first_byte, struct file_reader* reader, file_reader_error error_handler)
+#define opcode_type_cont(fn) void fn(byte first_byte, byte optional_second_byte, struct file_reader* reader, file_reader_error error_handler)
 #define OPCODE(name) opcode__##name
+#define OPCODE_CONT(name) opcode__cont_##name
 #define opcode(name) opcode_type(OPCODE(name))
+#define opcode_cont(name) opcode_type_cont(OPCODE_CONT(name))
 
 // @brief move, register/memory to/from register
 opcode(mov_1000_10xx);
@@ -25,7 +31,7 @@ opcode(mov_1000_1110);
 opcode(mov_1000_1100);
 
 // @brief push, register/memory
-opcode(push_1111_1111);
+opcode_cont(push_1111_1111);
 // @brief push, register
 opcode(push_0101_0xxx);
 // @brief push, segment register
@@ -80,19 +86,19 @@ opcode(popf);
 // @brief add, reg/memory with register to either
 opcode(add_0000_00xx);
 // @brief add, immediate to register/memory
-opcode(add_1000_00xx);
+opcode_cont(add_1000_00xx);
 // @brief add, immediate to accumulator
 opcode(add_0000_010x);
 
 // @brief add with carry, reg/memory with register to either
 opcode(adc_0001_00xx);
 // @brief add with carry, immediate to register/memory
-opcode(adc_1000_00xx);
+opcode_cont(adc_1000_00xx);
 // @brief add with carry, immediate to accumulator
 opcode(adc_0001_010x);
 
 // @brief increment, register/memory
-opcode(inc_1111_111x);
+opcode_cont(inc_1111_111x);
 // @brief increment, register
 opcode(inc_0100_0xxx);
 
@@ -105,29 +111,29 @@ opcode(daa);
 // @brief subtract, reg/memory and register to either
 opcode(sub_0010_10xx);
 // @brief subtract, immediate from register/memory
-opcode(sub_1000_00xx);
+opcode_cont(sub_1000_00xx);
 // @brief subtract, immediate from accumulator
 opcode(sub_0010_110x);
 
 // @brief subtract with borrow, reg/memory and register to either
 opcode(sbb_0001_10xx);
 // @brief subtract with borrow, immediate from register/memory
-opcode(sbb_1000_00xx);
+opcode_cont(sbb_1000_00xx);
 // @brief subtract with borrow, immediate from accumulator
 opcode(sbb_0001_110x);
 
 // @brief decrement, register/memory
-opcode(dec_1111_111x);
+opcode_cont(dec_1111_111x);
 // @brief decrement, register
 opcode(dec_0100_1xxx);
 
 // @brief change sign
-opcode(neg);
+opcode_cont(neg);
 
 // @brief compare, register/memory and register
 opcode(cmp_0011_10xx);
 // @brief compare, immediate with register/memory
-opcode(cmp_1000_00xx);
+opcode_cont(cmp_1000_00xx);
 // @brief compare, immediate with accumulator
 opcode(cmp_0011_110x);
 
@@ -138,19 +144,19 @@ opcode(aas);
 opcode(das);
 
 // @brief multiply (unsigned)
-opcode(mul);
+opcode_cont(mul);
 
 // @brief integer multiply (signed)
-opcode(imul);
+opcode_cont(imul);
 
 // @brief ASCII adjust for multiply
 opcode(aam);
 
 // @brief divide (unsigned)
-opcode(div);
+opcode_cont(div);
 
 // @brief integer divide (signed)
-opcode(idiv);
+opcode_cont(idiv);
 
 // @brief ASCII adjust for divide
 opcode(aad);
@@ -162,33 +168,33 @@ opcode(cbw);
 opcode(cwd);
 
 // @brief invert
-opcode(not);
+opcode_cont(not);
 
 // @brief shift logical/arithmetic left
-opcode(shl_sal);
+opcode_cont(shl_sal);
 
 // @brief shift logical right
-opcode(shr);
+opcode_cont(shr);
 
 // @brief shift arithmetic right
-opcode(sar);
+opcode_cont(sar);
 
 // @brief rotate left
-opcode(rol);
+opcode_cont(rol);
 
 // @brief rotate right
-opcode(ror);
+opcode_cont(ror);
 
 // @brief rotate through carry flag left
-opcode(rcl);
+opcode_cont(rcl);
 
 // @brief rotate through carry right
-opcode(rcr);
+opcode_cont(rcr);
 
 // @brief and, reg/memory with register to either
 opcode(and_0010_00xx);
 // @brief and, immediate to register/memory
-opcode(and_1000_000x);
+opcode_cont(and_1000_000x);
 // @brief and, immediate to accumulator
 opcode(and_0010_010x);
 
@@ -197,21 +203,21 @@ opcode(test_0001_00xx);
 // @brief and function to flags no result, undocumented
 opcode(test_1000_010x);
 // @brief and function to flags no result, immediate data and register/memory
-opcode(test_1111_011x);
+opcode_cont(test_1111_011x);
 // @brief and function to flags no result, immediate data and accumulator
 opcode(test_1010_100x);
 
 // @brief or, reg/memory and register to either
 opcode(or_0000_10xx);
 // @brief or, immediate to register/memory
-opcode(or_1000_000x);
+opcode_cont(or_1000_000x);
 // @brief or, immediate to accumulator
 opcode(or_0000_110x);
 
 // @brief exclusive or, reg/memory and register to either
 opcode(xor_0011_00xx);
 // @brief exclusive or, immediate to register/memory
-opcode(xor_1000_000x);
+opcode_cont(xor_1000_000x);
 // @brief exclusive or, immediate to accumulator
 opcode(xor_0011_010x);
 
@@ -236,7 +242,7 @@ opcode(stds);
 // @brief call, direct_within segment
 opcode(call_1110_1000);
 // @brief call, (indirect within segment) / (indirect intersegment)
-opcode(call_1111_1111);
+opcode_cont(call_1111_1111);
 // @brief call, direct intersegment
 opcode(call_1001_1010);
 
@@ -245,7 +251,7 @@ opcode(jmp_1110_1001);
 // @brief unconditional jump, direct within segment-short
 opcode(jmp_1110_1011);
 // @brief unconditional jump, (indirect within segment) / (indirect intersegment)
-opcode(jmp_1111_1111);
+opcode_cont(jmp_1111_1111);
 // @brief unconditional jump, direct intersegment
 opcode(jmp_1110_1010);
 
@@ -367,6 +373,7 @@ opcode(segment);
 
 // @brief not used
 opcode(null);
+opcode_cont(null);
 // @brief segment override prefix (stack segment register)
 opcode(ss);
 // @brief segment override prefix (code segment register)
@@ -394,8 +401,7 @@ opcode(repne_repnz);
 // @brief repeat (string instruction) if equal/zero (until the compared bytes or words are equal (ZF = 1) or until CX = 0 (end of string))
 opcode(rep_repe_repz);
 
-typedef void (*opcode_handler)(byte, byte, struct file_reader*, file_reader_error);
-static const opcode_handler opcode_handlers[256] = {
+static const opcode_fn opcode_handlers[256] = {
     // 0000 0000 - 0000 0111
     OPCODE(add_0000_00xx), OPCODE(add_0000_00xx), OPCODE(add_0000_00xx), OPCODE(add_0000_00xx), OPCODE(add_0000_010x), OPCODE(add_0000_010x), OPCODE(push_000x_x110), OPCODE(pop_000x_x111),
     // 0000 1000 - 0000 1111

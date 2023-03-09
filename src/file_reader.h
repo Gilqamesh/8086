@@ -33,6 +33,3 @@ void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_err
 // @brief if there is a byte reads and stores out
 // @returns true on read
 bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler);
-
-// @brief unreads and unstores a byte
-void file_reader__unread_byte(struct file_reader* self, byte c, file_reader_error error_handler);

@@ -24,11 +24,9 @@ void error_handler(const char* msg, enum file_reader_error level) {
 
 void dispatch_instruction(struct file_reader* reader) {
     byte first_byte;
-    byte second_byte;
     file_reader__read_byte(reader, &first_byte, error_handler);
-    file_reader__read_byte_opt(reader, &second_byte, error_handler);
 
-    opcode_handlers[first_byte](first_byte, second_byte, reader, error_handler);
+    opcode_handlers[first_byte](first_byte, reader, error_handler);
 }
 
 int main(int argc, char **argv)
