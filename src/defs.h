@@ -46,10 +46,8 @@ static inline const char* reg_to_word(unsigned int reg, int is_wide) {
         "al", "cl", "dl", "bl", "ah", "ch", "dh", "bh",
         "ax", "cx", "dx", "bx", "sp", "bp", "si", "di"
     };
-    static_assert(sizeof(registry_names)/sizeof(registry_names[0]) == 16);
 
-    assert(reg < 8);
-    return registry_names[reg + is_wide * 8];
+    return registry_names[reg + (is_wide << 3)];
 }
 
 static inline const char* effective_address_to_word(unsigned int r_m) {
@@ -63,9 +61,6 @@ static inline const char* effective_address_to_word(unsigned int r_m) {
         "bp",
         "bx"
     };
-    static_assert(sizeof(formulas_for_ea_calculations)/sizeof(formulas_for_ea_calculations[0]) == 8);
-
-    assert(r_m < 8);
 
     return formulas_for_ea_calculations[r_m];
 }

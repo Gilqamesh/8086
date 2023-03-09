@@ -7,17 +7,18 @@ void opcode__mov_1000_10xx(byte first_byte, struct file_reader* reader, file_rea
     // 100010 d w    mod reg r/m    (DISP-LO)    (DISP-HI)
     printf("%s", "mov");
     printf(" ");
-    int is_dest = (first_byte >> 1) & 1;
-    int is_wide = first_byte & 1;
+    int d = (first_byte >> 1) & 0b1;
+    int w = first_byte & 0b1;
 
     byte second_byte;
     file_reader__read_byte(reader, &second_byte, error_handler);
 
-    int mod = (second_byte >> 6) & 3;
-    int reg = (second_byte >> 3) & 7;
-    int r_m = second_byte & 7;
+    int mod = (second_byte >> 6) & 0b11;
+    int reg = (second_byte >> 3) & 0b111;
+    int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](is_wide, is_dest, reg, r_m, reader, error_handler);
+    mod_handlers[mod](w, d, reg, r_m, reader, error_handler);
+
     printf("\n");
 }
 
@@ -26,20 +27,22 @@ void opcode__mov_1100_011x(byte first_byte, struct file_reader* reader, file_rea
     // Immediate to register/memory
     // 1100011 w    mod 0 0 0 r/m    (DISP-LO)    (DISP-HI)    data    data if w = 1
 
+    printf("%s", "mov");
+    printf(" ");
+
     byte second_byte;
     file_reader__read_byte(reader, &second_byte, error_handler);
 
-    int is_dest = 0;
-    int is_wide = first_byte & 1;
+    int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
     byte reg = (second_byte >> 3) & 0b111;
     if (reg != 0) {
-        error_handler("in 'opcode__mov_1100_011x': reg can only be 000, the rest is (not used)", FILE_READER_ERROR_FATAL);
+        error_handler("in 'opcode__mov_1100_011x': invalid binary format, reg can only be 000", FILE_READER_ERROR_FATAL);
     }
 
-    mod_handlers[mod](is_wide, is_dest, reg, r_m, reader, error_handler);
+    mod_immediate_handlers[mod](w, 0, reg, r_m, reader, error_handler);
 }
 
 void opcode__mov_1011_xxxx(byte first_byte, struct file_reader* reader, file_reader_error error_handler) {
@@ -47,59 +50,87 @@ void opcode__mov_1011_xxxx(byte first_byte, struct file_reader* reader, file_rea
     // Immediate to register
     // 1011 w reg    data    data if w = 1
 
-    int   is_wide        = (first_byte >> 3) & 1;
-    int   reg            = first_byte & 7;
-    const char *reg_word = reg_to_word(reg, is_wide);
+    printf("%s", "mov");
+    printf(" ");
 
-    byte second_byte;
-    file_reader__read_byte(reader, &second_byte, error_handler);
+    int   w   = (first_byte >> 3) & 0b1;
+    int   reg = first_byte & 0b111;
 
-    word data = second_byte;
-    if (is_wide) {
+    word data;
+    file_reader__read_byte(reader, (byte*)&data, error_handler);
+    if (w) {
         file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
     }
 
-    printf("%s %s, %u\n", "mov", reg_word, data);
+    printf("%s", reg_to_word(reg, w));
+    printf(",");
+    printf(" ");
+    printf("%u", data);
+    printf("\n");
 }
 
 void opcode__mov_1010_000x(byte first_byte, struct file_reader* reader, file_reader_error error_handler) {
     // mov instruction
     // Memory to accumulator
     // 1010000 w    addr-lo    addr-hi
+
+    printf("%s", "mov");
+    printf(" ");
+
     (void)first_byte;
     (void)reader;
     (void)error_handler;
     assert(false && "todo: implement");
+
+    printf("\n");
 }
 
 void opcode__mov_1010_001x(byte first_byte, struct file_reader* reader, file_reader_error error_handler) {
     // mov instruction
     // Accumulator to memory
     // 1010001 w    addr-lo    addr-hi
+
+    printf("%s", "mov");
+    printf(" ");
+
     (void)first_byte;
     (void)reader;
     (void)error_handler;
     assert(false && "todo: implement");
+
+    printf("\n");
 }
 
 void opcode__mov_1000_1110(byte first_byte, struct file_reader* reader, file_reader_error error_handler) {
     // mov instruction
     // Register/memory to segment register
     // 10001110    mod 0 SR r/m    (DISP-LO)    (DISP-HI)
+
+    printf("%s", "mov");
+    printf(" ");
+
     (void)first_byte;
     (void)reader;
     (void)error_handler;
     assert(false && "TODO(david): implement how to dispatch 0SR");
+
+    printf("\n");
 }
 
 void opcode__mov_1000_1100(byte first_byte, struct file_reader* reader, file_reader_error error_handler) {
     // mov instruction
     // Segment register to register/memory
     // 10001100    mod 0 SR r/m    (DISP-LO)    (DISP-HI)
+
+    printf("%s", "mov");
+    printf(" ");
+
     (void)first_byte;
     (void)reader;
     (void)error_handler;
     assert(false && "TODO(david): implement how to dispatch 0SR");
+
+    printf("\n");
 }
 
 void opcode__cont_push_1111_1111(byte first_byte, byte second_byte, struct file_reader* reader, file_reader_error error_handler) {

@@ -22,13 +22,6 @@ void error_handler(const char* msg, enum file_reader_error level) {
     }
 }
 
-void dispatch_instruction(struct file_reader* reader) {
-    byte first_byte;
-    file_reader__read_byte(reader, &first_byte, error_handler);
-
-    opcode_handlers[first_byte](first_byte, reader, error_handler);
-}
-
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -42,7 +35,9 @@ int main(int argc, char **argv)
 
     printf("; %s disassembly:\nbits 16\n", argv[1]);
     while (file_reader__eof_reached(&reader) == false) {
-        dispatch_instruction(&reader);
+        byte first_byte;
+        file_reader__read_byte(&reader, &first_byte, error_handler);
+        opcode_handlers[first_byte](first_byte, &reader, error_handler);
     }
 
     file_reader__destroy(&reader);
