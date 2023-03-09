@@ -36,10 +36,7 @@ void mod__immediate_no_displacement(int w, int d, int reg, int r_m, struct file_
         mod__immediate_16_bit_displacement(w, d, reg, r_m, reader, error_handler);
     } else {
         word immediate;
-        file_reader__read_byte(reader, (byte*)&immediate, error_handler);
-        if (w) {
-            file_reader__read_byte(reader, (byte*)&immediate + 1, error_handler);
-        }
+        file_reader__read_by_type[w](reader, &immediate, error_handler);
         mod__no_ea_immediate_handlers[d](w, reg, r_m, immediate);
     }
 }
@@ -49,11 +46,7 @@ void mod__immediate_8_bit_displacement(int w, int d, int reg, int r_m, struct fi
     file_reader__read_byte(reader, &ea, error_handler);
 
     word immediate;
-    file_reader__read_byte(reader, (byte*)&immediate, error_handler);
-    if (w) {
-        file_reader__read_byte(reader, (byte*)&immediate + 1, error_handler);
-    }
-
+    file_reader__read_by_type[w](reader, &immediate, error_handler);
     mod__ea_immediate_handlers[d](w, reg, r_m, immediate, ea);
 }
 
@@ -63,11 +56,7 @@ void mod__immediate_16_bit_displacement(int w, int d, int reg, int r_m, struct f
     file_reader__read_byte(reader, (byte*)&ea + 1, error_handler);
 
     word immediate;
-    file_reader__read_byte(reader, (byte*)&immediate, error_handler);
-    if (w) {
-        file_reader__read_byte(reader, (byte*)&immediate + 1, error_handler);
-    }
-
+    file_reader__read_by_type[w](reader, &immediate, error_handler);
     mod__ea_immediate_handlers[d](w, reg, r_m, immediate, ea);
 }
 
@@ -76,10 +65,6 @@ void mod__immediate_register_mode_no_displacement(int w, int d, int reg, int r_m
     (void)error_handler;
 
     word immediate;
-    file_reader__read_byte(reader, (byte*)&immediate, error_handler);
-    if (w) {
-        file_reader__read_byte(reader, (byte*)&immediate + 1, error_handler);
-    }
-
+    file_reader__read_by_type[w](reader, &immediate, error_handler);
     mod__register_mode_no_ea_immediate_handlers[d](w, reg, r_m, immediate);
 }

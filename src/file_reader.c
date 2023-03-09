@@ -73,7 +73,7 @@ static int file_reader__read(struct file_reader *self, int size, file_reader_err
     return read_amount;
 }
 
-void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_error error_handler) {
+void file_reader__read_byte(struct file_reader* self, void* out, file_reader_error error_handler) {
     if (file_reader__eof_reached(self)) {
         error_handler("in 'file_reader__read_byte': already reached end of file, nothing to read", FILE_READER_ERROR_FATAL);
         return ;
@@ -83,11 +83,16 @@ void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_err
         file_reader__read(self, file_reader__available(self), error_handler);
     }
 
-    *out = file_reader_read_byte(self);
+    *(byte*)out = file_reader_read_byte(self);
 
     if (file_reader__read(self, 1, error_handler) == 0) {
         self->eof = true;
     }
+}
+
+void file_reader__read_word(struct file_reader* self, void* out, file_reader_error error_handler) {
+    file_reader__read_byte(self, (byte*)out, error_handler);
+    file_reader__read_byte(self, (byte*)out + 1, error_handler);
 }
 
 bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler) {

@@ -29,7 +29,14 @@ void file_reader__destroy(struct file_reader* self);
 bool file_reader__eof_reached(struct file_reader* self);
 
 // @brief reads and stores out a byte
-void file_reader__read_byte(struct file_reader* self, byte* out, file_reader_error error_handler);
+void file_reader__read_byte(struct file_reader* self, void* out, file_reader_error error_handler);
+// @brief reads and stores out a word
+void file_reader__read_word(struct file_reader* self, void* out, file_reader_error error_handler);
 // @brief if there is a byte reads and stores out
 // @returns true on read
 bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler);
+
+static void (*const file_reader__read_by_type[2])(struct file_reader* self, void* out, file_reader_error error_handler) = {
+    file_reader__read_byte,
+    file_reader__read_word
+};

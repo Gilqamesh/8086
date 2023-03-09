@@ -57,10 +57,7 @@ void opcode__mov_1011_xxxx(byte first_byte, struct file_reader* reader, file_rea
     int   reg = first_byte & 0b111;
 
     word data;
-    file_reader__read_byte(reader, (byte*)&data, error_handler);
-    if (w) {
-        file_reader__read_byte(reader, (byte*)&data + 1, error_handler);
-    }
+    file_reader__read_by_type[w](reader, &data, error_handler);
 
     printf("%s", reg_to_word(reg, w));
     printf(",");
