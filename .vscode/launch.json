@@ -5,7 +5,9 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/src/mynasm",
-            "args": ["${workspaceFolder}/asm/listing_0037_single_register_mov"],
+            // "args": ["${workspaceFolder}/asm/listing_0037_single_register_mov"],
+            // "args": ["${workspaceFolder}/asm/listing_0040_challenge_movs"],
+            "args": ["${workspaceFolder}/asm/listing_0039_more_movs"],
             // "args": ["${workspaceFolder}/asm/listing_0038_many_register_mov"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}"

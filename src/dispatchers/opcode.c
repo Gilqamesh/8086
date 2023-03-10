@@ -5,8 +5,10 @@ void opcode__mov_1000_10xx(byte first_byte, struct file_reader* reader, file_rea
     // Register/memory to/from register
     // mov instruction
     // 100010 d w    mod reg r/m    (DISP-LO)    (DISP-HI)
+
     printf("%s", "mov");
     printf(" ");
+
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
 
@@ -37,12 +39,9 @@ void opcode__mov_1100_011x(byte first_byte, struct file_reader* reader, file_rea
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    byte reg = (second_byte >> 3) & 0b111;
-    if (reg != 0) {
-        error_handler("in 'opcode__mov_1100_011x': invalid binary format, reg can only be 000", FILE_READER_ERROR_FATAL);
-    }
+    mod_immediate_handlers[mod](w, r_m, reader, error_handler);
 
-    mod_immediate_handlers[mod](w, 0, reg, r_m, reader, error_handler);
+    printf("\n");
 }
 
 void opcode__mov_1011_xxxx(byte first_byte, struct file_reader* reader, file_reader_error error_handler) {
@@ -53,16 +52,16 @@ void opcode__mov_1011_xxxx(byte first_byte, struct file_reader* reader, file_rea
     printf("%s", "mov");
     printf(" ");
 
-    int   w   = (first_byte >> 3) & 0b1;
-    int   reg = first_byte & 0b111;
+    int w   = (first_byte >> 3) & 0b1;
+    int reg = first_byte & 0b111;
 
     word data;
     file_reader__read_by_type[w](reader, &data, error_handler);
 
-    printf("%s", reg_to_word(reg, w));
-    printf(",");
-    printf(" ");
+    print__reg_or_r_m(reg, w);
+    print__seperator__dst_src();
     printf("%u", data);
+
     printf("\n");
 }
 
@@ -74,10 +73,15 @@ void opcode__mov_1010_000x(byte first_byte, struct file_reader* reader, file_rea
     printf("%s", "mov");
     printf(" ");
 
-    (void)first_byte;
-    (void)reader;
-    (void)error_handler;
-    assert(false && "todo: implement");
+    int w = first_byte & 0b1;
+
+    word addr;
+    file_reader__read_word(reader, &addr, error_handler);
+
+    // NOTE(david): register ax for word transfers, al for bytes
+    printf("%s", reg_to_word(0, w));
+    print__seperator__dst_src();
+    BRACKETED_EXPRESSION(printf("%u", addr));
 
     printf("\n");
 }
@@ -90,10 +94,15 @@ void opcode__mov_1010_001x(byte first_byte, struct file_reader* reader, file_rea
     printf("%s", "mov");
     printf(" ");
 
-    (void)first_byte;
-    (void)reader;
-    (void)error_handler;
-    assert(false && "todo: implement");
+    int w = first_byte & 0b1;
+
+    word addr;
+    file_reader__read_word(reader, &addr, error_handler);
+
+    // NOTE(david): register ax for word transfers, al for bytes
+    BRACKETED_EXPRESSION(printf("%u", addr));
+    print__seperator__dst_src();
+    printf("%s", reg_to_word(0, w));
 
     printf("\n");
 }

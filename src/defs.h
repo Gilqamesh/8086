@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 typedef uint16_t  word;
+typedef int16_t   signed_word;
 typedef uint8_t   byte;
 
 enum word_registries {
