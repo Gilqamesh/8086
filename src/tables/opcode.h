@@ -2,14 +2,24 @@
 
 #include "../defs.h"
 #include "../file_reader.h"
+#include "../label.h"
+#include "../instruction.h"
 
-struct file_reader;
+struct opcode_context
+{
+    struct file_reader       file_reader;
+    file_reader_error        error_handler;
 
-typedef void (*opcode_fn)(byte first_byte, struct file_reader* reader, file_reader_error error_handler);
-typedef void (*opcode_cont_fn)(byte first_byte, byte optional_second_byte, struct file_reader* reader, file_reader_error error_handler);
+    struct label_list        label_list;
 
-#define opcode_type(fn) void fn(byte first_byte, struct file_reader* reader, file_reader_error error_handler)
-#define opcode_type_cont(fn) void fn(byte first_byte, byte optional_second_byte, struct file_reader* reader, file_reader_error error_handler)
+    struct instruction_list  instruction_list;
+};
+
+typedef void (*opcode_fn)(byte first_byte, struct opcode_context *context);
+typedef void (*opcode_cont_fn)(byte first_byte, byte optional_second_byte, struct opcode_context *context);
+
+#define opcode_type(fn) void fn(byte first_byte, struct opcode_context *context)
+#define opcode_type_cont(fn) void fn(byte first_byte, byte optional_second_byte, struct opcode_context *context)
 #define OPCODE(name) opcode__##name
 #define OPCODE_CONT(name) opcode__cont_##name
 #define opcode(name) opcode_type(OPCODE(name))
@@ -237,7 +247,7 @@ opcode(scas);
 opcode(lods);
 
 // @brief store byte/wd from AL/AX
-opcode(stds);
+opcode(stos);
 
 // @brief call, direct_within segment
 opcode(call_1110_1000);
@@ -455,7 +465,7 @@ static const opcode_fn opcode_handlers[256] = {
     // 1010 0000 - 1010 0111
     OPCODE(mov_1010_000x),  OPCODE(mov_1010_000x),  OPCODE(mov_1010_001x), OPCODE(mov_1010_001x), OPCODE(movs), OPCODE(movs), OPCODE(cmps), OPCODE(cmps),
     // 1010 1000 - 1010 1111
-    OPCODE(test_1010_100x), OPCODE(test_1010_100x), OPCODE(stds),          OPCODE(stds),          OPCODE(lods), OPCODE(lods), OPCODE(scas), OPCODE(scas),
+    OPCODE(test_1010_100x), OPCODE(test_1010_100x), OPCODE(stos),          OPCODE(stos),          OPCODE(lods), OPCODE(lods), OPCODE(scas), OPCODE(scas),
 
     // 1011 0000 - 1011 0111
     OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx), OPCODE(mov_1011_xxxx),

@@ -54,6 +54,10 @@
         "stdexcept": "c",
         "streambuf": "c",
         "typeinfo": "c",
-        "mod_tables.h": "c"
+        "mod_tables.h": "c",
+        "stdint.h": "c",
+        "string.h": "c",
+        "defs.h": "c",
+        "types.h": "c"
     }
 }

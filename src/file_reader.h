@@ -7,12 +7,13 @@
 struct file_reader // circular buffer data structure for storing read bytes from a file
 {
     // byte  buffer[1024];
-    byte  buffer[1]; // for testing
-    int   available;
-    int   head;
-    int   tail;
-    int   fd;
-    bool  eof;
+    byte      buffer[1]; // for testing
+    int       available;
+    int       head;
+    int       tail;
+    int       fd;
+    bool      eof;
+    uint32_t  read_bytes_so_far;
 };
 
 enum file_reader_error {
@@ -32,9 +33,8 @@ bool file_reader__eof_reached(struct file_reader* self);
 void file_reader__read_byte(struct file_reader* self, void* out, file_reader_error error_handler);
 // @brief reads and stores out a word
 void file_reader__read_word(struct file_reader* self, void* out, file_reader_error error_handler);
-// @brief if there is a byte reads and stores out
-// @returns true on read
-bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler);
+
+uint32_t file_reader__read_bytes_so_far(struct file_reader* self);
 
 static void (*const file_reader__read_by_type[2])(struct file_reader* self, void* out, file_reader_error error_handler) = {
     file_reader__read_byte,

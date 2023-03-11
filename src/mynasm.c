@@ -1,11 +1,8 @@
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "defs.h"
 #include "file_reader.h"
-#include "dispatchers/opcode.h"
+#include "tables/opcode.h"
+#include "label.h"
+#include "instruction.h"
 
 void error_handler(const char* msg, enum file_reader_error level) {
     switch (level) {
@@ -22,6 +19,44 @@ void error_handler(const char* msg, enum file_reader_error level) {
     }
 }
 
+void label_list__print(struct label_list* self) {
+    struct label* cur_label = self->labels;
+
+    printf("  ----==Labels==----  \n");
+    while (cur_label) {
+        printf(
+            "    ip:  %d\n"
+            "    uid: %d\n\n",
+            cur_label->instruction_pointer,
+            cur_label->unique_label_id);
+        cur_label = cur_label->next;
+    }
+    printf("\n");
+}
+
+void instruction_list__print(struct instruction_list* self) {
+    printf("  ----==Instructions==----  \n");
+    for (uint32_t instruction_index = 0; instruction_index < self->instructions_fill; ++instruction_index) {
+        printf(
+            "    instruction: %s\n",
+            self->instructions[instruction_index].buffer
+        );
+    }
+}
+
+void print_disassemble(struct opcode_context* context) {
+    struct label* cur_label = context->label_list.labels;
+
+    for (uint32_t instruction_index = 0; instruction_index < context->instruction_list.instructions_fill; ++instruction_index) {
+        uint32_t cur_instruction_pointer = context->instruction_list.instructions[instruction_index].instruction_pointer;
+        if (cur_label && cur_label->instruction_pointer == cur_instruction_pointer) {
+            printf("%s_%d:", "label", cur_label->unique_label_id);
+            cur_label = cur_label->next;
+        }
+        printf("%s\n", context->instruction_list.instructions[instruction_index].buffer);
+    }
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -29,16 +64,23 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    struct file_reader  reader;
+    struct opcode_context  opcode_context;
+    opcode_context.error_handler = &error_handler;
 
-    file_reader__create(&reader, argv[1], error_handler);
+    file_reader__create(&opcode_context.file_reader, argv[1], error_handler);
+    label_list__create(&opcode_context.label_list);
+    instruction_list__create(&opcode_context.instruction_list);
 
     printf("; %s disassembly:\nbits 16\n", argv[1]);
-    while (file_reader__eof_reached(&reader) == false) {
+    while (file_reader__eof_reached(&opcode_context.file_reader) == false) {
         byte first_byte;
-        file_reader__read_byte(&reader, &first_byte, error_handler);
-        opcode_handlers[first_byte](first_byte, &reader, error_handler);
+        file_reader__read_byte(&opcode_context.file_reader, &first_byte, error_handler);
+        opcode_handlers[first_byte](first_byte, &opcode_context);
     }
 
-    file_reader__destroy(&reader);
+    print_disassemble(&opcode_context);
+
+    file_reader__destroy(&opcode_context.file_reader);
+    label_list__destroy(&opcode_context.label_list);
+    instruction_list__destroy(&opcode_context.instruction_list);
 }

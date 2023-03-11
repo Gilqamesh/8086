@@ -3,10 +3,17 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdarg.h>
 
 typedef uint16_t  word;
 typedef int16_t   signed_word;
 typedef uint8_t   byte;
+typedef int8_t    signed_byte;
 
 enum word_registries {
     AX = 0b000,

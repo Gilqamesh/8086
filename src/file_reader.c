@@ -4,11 +4,12 @@
 #include <stdio.h>
 
 void file_reader__create(struct file_reader* self, const char* filename, file_reader_error error_handler) {
-    self->available = sizeof(self->buffer);
-    self->head      = 0;
-    self->tail      = 0;
-    self->fd        = open(filename, O_RDONLY);
-    self->eof       = false;
+    self->available          = sizeof(self->buffer);
+    self->head               = 0;
+    self->tail               = 0;
+    self->fd                 = open(filename, O_RDONLY);
+    self->eof                = false;
+    self->read_bytes_so_far  = 0;
 
     if (self->fd == -1) {
         perror("open");
@@ -49,6 +50,8 @@ static byte file_reader_read_byte(struct file_reader* self) {
     if (self->tail == sizeof(self->buffer)) {
         self->tail = 0;
     }
+
+    self->read_bytes_so_far += 1;
 
     return byte;
 }
@@ -95,20 +98,6 @@ void file_reader__read_word(struct file_reader* self, void* out, file_reader_err
     file_reader__read_byte(self, (byte*)out + 1, error_handler);
 }
 
-bool file_reader__read_byte_opt(struct file_reader* self, byte* out, file_reader_error error_handler) {
-    if (file_reader__size(self) == 0) {
-        file_reader__read(self, file_reader__available(self), error_handler);
-    }
-
-    bool ret = false;
-    if (file_reader__size(self)) {
-        *out = file_reader_read_byte(self);
-        ret = true;
-    }
-
-    if (file_reader__read(self, 1, error_handler) == 0) {
-        self->eof = true;
-    }
-
-    return ret;
+uint32_t file_reader__read_bytes_so_far(struct file_reader* self) {
+    return self->read_bytes_so_far;
 }

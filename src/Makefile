@@ -24,3 +24,7 @@ clean:
 
 .phony: re
 re: clean all
+
+.phony: diff
+diff:
+	sh ../scripts/diff.sh
