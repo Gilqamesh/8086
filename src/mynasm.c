@@ -50,7 +50,7 @@ void print_disassemble(struct opcode_context* context) {
     for (uint32_t instruction_index = 0; instruction_index < context->instruction_list.instructions_fill; ++instruction_index) {
         uint32_t cur_instruction_pointer = context->instruction_list.instructions[instruction_index].instruction_pointer;
         if (cur_label && cur_label->instruction_pointer == cur_instruction_pointer) {
-            printf("%s_%d:\n", "label", cur_label->unique_label_id);
+            printf("%s%d:\n", cur_label->name, cur_label->unique_label_id);
             cur_label = cur_label->next;
         }
         printf("%s\n", context->instruction_list.instructions[instruction_index].buffer);

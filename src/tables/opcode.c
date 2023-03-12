@@ -2995,17 +2995,25 @@ void opcode__call_1001_1010(byte first_byte, struct opcode_context* context) {
     instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
     instruction__push(&instruction, "call ");
 
-    word ip;
+    signed_word ip;
     file_reader__read_word(&context->file_reader, &ip, context->error_handler);
 
     word cs;
     file_reader__read_word(&context->file_reader, &cs, context->error_handler);
 
+    uint32_t function_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + ip;
+    label_list__insert(&context->label_list, function_instruction_pointer, "func");
+
+    uint32_t unique_function_id;
+    if (!label_list__get_unique_id(&context->label_list, function_instruction_pointer, &unique_function_id)) {
+        context->error_handler("Couldn't find the recently inserted unique id", FILE_READER_ERROR_FATAL);
+    }
+
     instruction__push(
         &instruction,
-        "%u:%u",
+        "%u:func%u",
         cs,
-        ip
+        unique_function_id
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3689,16 +3697,16 @@ void opcode__loopnz_loopne(byte first_byte, struct opcode_context* context) {
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
+    int32_t label_unique_id = label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id);
+    if (label_unique_id == -1) {
         context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
+        "%s%u",
         "label",
         label_unique_id
     );
@@ -3723,7 +3731,7 @@ void opcode__jcxz(byte first_byte, struct opcode_context* context) {
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
     uint32_t label_unique_id;
     if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
@@ -3732,7 +3740,7 @@ void opcode__jcxz(byte first_byte, struct opcode_context* context) {
 
     instruction__push(
         &instruction,
-        "%s_%u",
+        "%s%u",
         "label",
         label_unique_id
     );

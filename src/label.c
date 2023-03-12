@@ -1,7 +1,7 @@
 #include "label.h"
 
-void label__print_name(struct label* label) {
-    printf("%s_%d", "label", label->unique_label_id);
+const char* label__get_name(struct label* label) {
+    return label->name;
 }
 
 void label_list__create(struct label_list* self) {
@@ -17,12 +17,15 @@ void label_list__destroy(struct label_list* self) {
     }
 }
 
-bool label_list__insert(struct label_list* self, uint32_t instruction_pointer) {
+int32_t label_list__insert(struct label_list* self, uint32_t instruction_pointer, const char* label_name) {
     struct label** current_label_pointer = &self->labels;
 
     while (*current_label_pointer && instruction_pointer >= (*current_label_pointer)->instruction_pointer) {
         if ((*current_label_pointer)->instruction_pointer == instruction_pointer) {
-            return false;
+            if (strcmp(label_name, (*current_label_pointer)->name) == 0) {
+                return (*current_label_pointer)->unique_label_id;
+            }
+            return -1;
         }
         current_label_pointer = &(*current_label_pointer)->next;
     }
@@ -33,19 +36,11 @@ bool label_list__insert(struct label_list* self, uint32_t instruction_pointer) {
     (*current_label_pointer)->unique_label_id = self->unique_label_counter++;
     (*current_label_pointer)->next = current_label;
     (*current_label_pointer)->instruction_pointer = instruction_pointer;
-
-    return true;
-}
-
-bool label_list__get_unique_id(struct label_list* self, uint32_t instruction_pointer, uint32_t *out) {
-    struct label* cur_label = self->labels;
-    while (cur_label) {
-        if (cur_label->instruction_pointer == instruction_pointer) {
-            *out = cur_label->unique_label_id;
-            return true;
-        }
-        cur_label = cur_label->next;
+    uint32_t name_index = 0;
+    while (name_index < sizeof((*current_label_pointer)->name) - 1 && label_name[name_index] != '\0') {
+        ++name_index;
     }
+    (*current_label_pointer)->name[name_index] = '\0';
 
-    return false;
+    return (*current_label_pointer)->unique_label_id;
 }

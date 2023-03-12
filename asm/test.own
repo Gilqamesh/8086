@@ -1,3 +1,3 @@
 ; test.original_bin disassembly:
 bits 16
-call 12:5
+call 12:func_0
