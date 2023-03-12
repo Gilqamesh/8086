@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 
 RED="\e[31m"
 GREEN="\e[32m"
@@ -30,7 +30,7 @@ do
 done
 
 # rm *.original_bin
-rm *.own_bin
-rm *.own
+# rm *.own_bin
+# rm *.own
 
 cd ../src

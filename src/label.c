@@ -1,5 +1,4 @@
 #include "label.h"
-#include "libc/mylib.h"
 
 void label__print_name(struct label* label) {
     printf("%s_%d", "label", label->unique_label_id);
