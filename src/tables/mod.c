@@ -117,3 +117,54 @@ void mod__immediate_signed_register_mode_no_ea(int s, int w, int r_m, struct opc
 
     mod__register_mode_immediate(w, r_m, immediate, instruction);
 }
+
+void mod__source_only___no_ea(int r_m, struct opcode_context* context, struct instruction* instruction) {
+    if (r_m == 0b110) {
+        word direct_address;
+        file_reader__read_word(&context->file_reader, &direct_address, context->error_handler);
+
+        instruction__push(
+            instruction,
+            "word [%u]",
+            direct_address
+        );
+    } else {
+        instruction__push(
+            instruction,
+            "word [%s]",
+            effective_address_to_word(r_m)
+        );
+    }
+}
+
+void mod__source_only__8_bit_ea(int r_m, struct opcode_context* context, struct instruction* instruction) {
+    signed_byte ea;
+    file_reader__read_byte(&context->file_reader, &ea, context->error_handler);
+
+    instruction__push(
+        instruction,
+        "word "
+    );
+    mod__ea__print__zero_handler[ea == 0](r_m, ea, instruction);
+}
+
+void mod__source_only__16_bit_ea(int r_m, struct opcode_context* context, struct instruction* instruction) {
+    signed_word ea;
+    file_reader__read_word(&context->file_reader, &ea, context->error_handler);
+
+    instruction__push(
+        instruction,
+        "word "
+    );
+    mod__ea__print__zero_handler[ea == 0](r_m, ea, instruction);
+}
+
+void mod__source_only__register_mode_no_ea(int r_m, struct opcode_context* context, struct instruction* instruction) {
+    (void)context;
+
+    instruction__push(
+        instruction,
+        "word %s",
+        reg_to_word(r_m, 1)
+    );
+}

@@ -1,6 +1,6 @@
 EXECUTABLE = mynasm
 
-SOURCES = $(shell find . -name "*.c")
+SOURCES = $(shell find . -name "*.c" ! -name "byte_printer.c")
 HEADERS = $(shell find . -name "*.h")
 
 OBJECTS = $(patsubst %.c, %.o, $(SOURCES))
@@ -28,3 +28,7 @@ re: clean all
 .phony: diff
 diff:
 	sh ../scripts/diff.sh
+
+.phony: bprinter
+bprinter: byte_printer.o file_reader.o
+	$(CC) $^ $(LFLAGS) -o $@

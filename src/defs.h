@@ -42,6 +42,32 @@ enum byte_registries { // low-high part of AX, BX, CX and DX
     DH = 0b110
 };
 
+enum segment_registries {
+    ES = 0b00,  // extra segment
+    CS = 0b01, // code segment
+    SS = 0b10, // stack segment
+    DS = 0b11  // data segment
+};
+
+enum instruction_registry {
+    IP = 0b00 // instruction_pointer
+};
+
+enum control_flags {
+    TF = 0b00, // trap
+    DF = 0b01, // direction
+    IF = 0b10  // interrupt-enable
+};
+
+enum status_flags {
+    OF = 0b000, // overflow
+    SF = 0b001, // sign
+    ZF = 0b010, // zero
+    AF = 0b011, // auxiliary carry
+    PF = 0b100, // parity
+    CF = 0b101  // carry
+};
+
 enum mod_field {
     MEMORY_MODE_NO_DISPLACEMENT     = 0b00,
     MEMORY_MODE_8_BIT_DISPLACEMENT  = 0b01,
@@ -71,4 +97,12 @@ static inline const char* effective_address_to_word(unsigned int r_m) {
     };
 
     return formulas_for_ea_calculations[r_m];
+}
+
+static inline const char* segment_reg_to_word(enum segment_registries reg) {
+    static const char* const segment_registry_names[] = {
+        "es", "cs", "ss", "ds"
+    };
+
+    return segment_registry_names[reg];
 }

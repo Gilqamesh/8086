@@ -2,6 +2,7 @@
 #include "mod.h"
 
 void opcode__mov_1000_10xx(byte first_byte, struct opcode_context* context) {
+
     // Register/memory to/from register
     // mov instruction
     // 100010 d w    mod reg r/m    (DISP-LO)    (DISP-HI)
@@ -168,133 +169,527 @@ void opcode__mov_1000_1100(byte first_byte, struct opcode_context* context) {
 }
 
 void opcode__cont_push_1111_1111(byte first_byte, byte second_byte, struct opcode_context* context) {
+
+    // Register/memory
+    // 1111 1111    mod 110 r/m    (DISP-LO)    (DISP-HI)
+
     (void)first_byte;
-    (void)second_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+    
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "push ");
+
+    int mod = (second_byte >> 6) & 0b11;
+    int r_m = second_byte & 0b111;
+
+    mod_source_only_handlers[mod](r_m, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__push_0101_0xxx(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Register
+    // 0101 0reg
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "push ");
+
+    int reg = first_byte & 0b111;
+
+    instruction__push(
+        &instruction,
+        "%s",
+        reg_to_word(reg, 1)
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__push_000x_x110(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Segment register
+    // 000r eg110
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "push ");
+
+    int reg = (first_byte >> 3) & 0b11;
+
+    instruction__push(
+        &instruction,
+        "%s",
+        segment_reg_to_word(reg)
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__pop_1000_1111(byte first_byte, struct opcode_context* context) {
+
+    // Register/memory
+    // 1000 1111    mod 000 r/m    (DISP-LO)    (DISP-HI)
+
     (void)first_byte;
-    (void)context;
+
+    struct instruction instruction;
+    
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "pop ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
 
-    byte reg = (second_byte >> 3) & 0b111;
-    if (reg != 0) {
-        context->error_handler("in 'opcode__pop_1000_1111': reg can only be 000, the rest is (not used)", FILE_READER_ERROR_FATAL);
-    }
+    int mod = (second_byte >> 6) & 0b11;
+    int r_m = second_byte & 0b111;
 
-    assert(false && "todo: implement");
+    mod_source_only_handlers[mod](r_m, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__pop_0101_1xxx(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Register
+    // 0101 1reg
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "pop ");
+
+    int reg = first_byte & 0b111;
+
+    instruction__push(
+        &instruction,
+        "%s",
+        reg_to_word(reg, 1)
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__pop_000x_x111(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Segment register
+    // 000r eg111
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "pop ");
+
+    int reg = (first_byte >> 3) & 0b11;
+
+    instruction__push(
+        &instruction,
+        "%s",
+        segment_reg_to_word(reg)
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__xchg_1000_011x(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Register/memory with register
+    // 1000 011w    mod reg r/m    (DISP-LO)    (DISP-HI)
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "xchg ");
+
+    int w = first_byte & 0b1;
+
+    byte second_byte;
+    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+
+    int mod = (second_byte >> 6) & 0b11;
+    int reg = (second_byte >> 3) & 0b111;
+    int r_m = second_byte & 0b111;
+
+    mod_handlers[mod](w, 1, reg, r_m, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__xchg_1001_0xxx(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Register with accumulator
+    // 1001 0reg
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "xchg ");
+
+    int reg = first_byte & 0b111;
+
+    mod__register_mode_no_ea(1, 0, reg, AX, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__in_1110_010x(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Fixed port
+    // 1110 010w    DATA-8
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "in ");
+
+    int w = first_byte & 0b1;
+
+    byte data;
+    file_reader__read_byte(&context->file_reader, &data, context->error_handler);
+
+    instruction__push(
+        &instruction,
+        "%s, %u",
+        w ? reg_to_word(AX, 1) : reg_to_word(AL, 0),
+        data
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__in_1110_110x(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Variable port
+    // 1110 110w
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "in ");
+
+    int w = first_byte & 0b1;
+
+    instruction__push(
+        &instruction,
+        "%s, %s",
+        w ? reg_to_word(AX, 1) : reg_to_word(AL, 0),
+        "dx"
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__out_1110_011x(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Fixed port
+    // 1110 011w    DATA-8
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "out ");
+
+    int w = first_byte & 0b1;
+
+    byte data;
+    file_reader__read_byte(&context->file_reader, &data, context->error_handler);
+
+    instruction__push(
+        &instruction,
+        "%u, %s",
+        data,
+        w ? reg_to_word(AX, 1) : reg_to_word(AL, 0)
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__out_1110_111x(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Variable port
+    // 1110 111w
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "out ");
+
+    int w = first_byte & 0b1;
+
+    instruction__push(
+        &instruction,
+        "%s, %s",
+        "dx",
+        w ? reg_to_word(AX, 1) : reg_to_word(AL, 0)
+    );
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__xlat(byte first_byte, struct opcode_context* context) {
+
+    // Translate byte to AL
+    // 1101 0111
+
+    /*
+        XLAT (translate) replaces a byte in the AL
+        register with a byte from a 256-byte, user-coded
+        translation table. Register BX is assumed to point
+        to the beginning of the table. The byte in AL is
+        used as an index into the table and is replaced by
+        the byte at the offset in the table corresponding to
+        AL's binary value. The first byte in the table has
+        an offset of O. For example, if AL contains 5H,
+        and the sixth element of the translation table contains 33H, then AL will contain 33H following
+        the instruction. XLAT is useful for translating
+        characters from one code to another, the classic
+        example being ASCII to EBCDIC (extended binary-coded decimal interchange code) or the reverse. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "xlat");
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__lea(byte first_byte, struct opcode_context* context) {
+
+    // Load EA to register
+    // 1000 1101    mod reg r/m    (DISP-LO)    (DISP-HI)
+
+    /*
+        LEA (load effective address) transfers the offset
+        of the source operand (rather than its value) to the
+        destination operand. The source operand must be
+        a memory operand, and the destination operand
+        must be a 16-bit general register. LEA does not
+        affect any flags. The XLA T and string instructions assume that certain registers point to
+        operands; LEA can be used to load these registers
+        (e.g., 10'lding BX with the address of the translate
+        table used by the XLA T instruction). 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "lea ");
+
+    byte second_byte;
+    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+
+    int mod = (second_byte >> 6) & 0b11;
+    int reg = (second_byte >> 3) & 0b111;
+    int r_m = second_byte & 0b111;
+
+    mod_handlers[mod](1, 1, reg, r_m, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__lds(byte first_byte, struct opcode_context* context) {
+
+    // Load pointer to DS
+    // 1100 0101    mod reg r/m    (DISP-LO)    (DISP-HI)
+
+    /*
+        LDS (load pointer using DS) transfers a 32-bit
+        pointer variable from the source operand, which
+        must be a memory operand, to the destination
+        operand and register DS. The offset word of the
+        pointer is transferred to the destination operand,
+        which may be any 16-bit general register. The segment word of the pointer is transferred to register
+        DS. Specifying SI as the destination operand is a
+        convenient way to prepare to process a source
+        string that is not in the current data segment
+        (string instructions assume that the source string
+        is located in the current data segment and that SI
+        contains the offset of the string). 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "lds ");
+
+    byte second_byte;
+    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+
+    int mod = (second_byte >> 6) & 0b11;
+    int reg = (second_byte >> 3) & 0b111;
+    int r_m = second_byte & 0b111;
+
+    mod_handlers[mod](1, 1, reg, r_m, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__les(byte first_byte, struct opcode_context* context) {
+
+    // Load pointer to ES
+    // 1100 0100    mod reg r/m    (DISP-LO)    (DISP-HI)
+
+    /*
+        LES (load pointer using ES) transfers a 32-bit
+        pointer variable from the source operand, which
+        must be a memory operand, to the destination
+        operand and register ES. The offset word of the
+        pointer is transferred to the destination operand,
+        which may be any 16-bit general register. The segment word of the pointer is transferred to register
+        ES. Specifying DI as the destination operand is a
+        convenient way to prepare to process a destination string that is not in the current extra segment.
+        (The destination string must be located in the
+        extra segment, and DI must contain the offset of
+        the string.) 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "les ");
+
+    byte second_byte;
+    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+
+    int mod = (second_byte >> 6) & 0b11;
+    int reg = (second_byte >> 3) & 0b111;
+    int r_m = second_byte & 0b111;
+
+    mod_handlers[mod](1, 1, reg, r_m, context, &instruction);
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__lahf(byte first_byte, struct opcode_context* context) {
+
+    // Load AH with flags
+    // 1001 1111
+
+    /*
+        LAHF (load register AH from flags) copies SF,
+        ZF, AF, PF and CF (the 8080/8085 flags) into
+        bits 7, 6, 4, 2 and 0, respectively, of register AH 
+        (see figure 2-32). The content of bits 5, 3 and 1 is
+        undefined; the flags themselves are not affected.
+        LAHF is provided primarily for converting
+        8080/8085 assembly language programs to run on
+        an 8086 or 8088. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "lahf");
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__sahf(byte first_byte, struct opcode_context* context) {
+
+    // Store AH into flags
+    // 1001 1110
+
+    /*
+        SAHF (store register AH into flags) transfers bits
+        7,6,4,2 and 0 from register AH into SF, ZF, AF,
+        PF and CF, respectively, replacing whatever
+        values these flags previously had. OF, DF, IF and
+        TF are not affected. This instruction is provided
+        for 8080/8085 compatibility. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "sahf");
+
+    instruction_list__push(&context->instruction_list, instruction);
 }
 
 void opcode__pushf(byte first_byte, struct opcode_context* context) {
+
+    // Push flags
+    // 1001 1100
+
+    /*
+        PUSHF decrements SP (the stack pointer) by two
+        and then transfers all flags to the word at the top
+        of stack pointed to by SP (see figure 2-32). The
+        flags themselves are not affected. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "pushf");
+
+    instruction_list__push(&context->instruction_list, instruction);
 }
 
 void opcode__popf(byte first_byte, struct opcode_context* context) {
+
+    // Pop flags
+    // 1001 1101
+
+    /*
+        POPF transfers specific bits from the word at the
+        current top of stack (pointed to by register SP)
+        into the 8086/8088 flags, replacing whatever
+        values the flags previously contained (see figure
+        2-32). SP is then incremented by two to point to
+        the new top of stack. PUSHF and POPF allow a
+        procedure to save and restore a calling program's
+        flags. They also allow a program to change the 
+        setting of TF (there is no instruction for updating
+        this flag directly). The change is accomplished by
+        pushing the flags, altering bit 8 of the memoryimage and then popping the flags. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "popf");
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__add_0000_00xx(byte first_byte, struct opcode_context* context) {
@@ -1719,9 +2114,18 @@ void opcode__es(byte first_byte, struct opcode_context* context) {
 }
 
 void opcode__nop(byte first_byte, struct opcode_context* context) {
+
+    // does nothing, for example: xchg ax, ax
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction instruction;
+
+    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(&instruction, "nop");
+
+    instruction_list__push(&context->instruction_list, instruction);
+
 }
 
 void opcode__1000_000x(byte first_byte, struct opcode_context* context) {
@@ -1836,6 +2240,9 @@ void opcode__1111_1110(byte first_byte, struct opcode_context* context) {
 }
 
 void opcode__1111_1111(byte first_byte, struct opcode_context* context) {
+    
+    // 1111 1111    mod reg r_m
+
     static const opcode_cont_fn opcode_handler[8] = {
         opcode__cont_inc_1111_111x,
         opcode__cont_dec_1111_111x,

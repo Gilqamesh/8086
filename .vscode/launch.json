@@ -9,7 +9,7 @@
             // "args": ["${workspaceFolder}/asm/listing_0040_challenge_movs.original_bin"],
             // "args": ["${workspaceFolder}/asm/listing_0039_more_movs.original_bin"],
             // "args": ["${workspaceFolder}/asm/listing_0041_add_sub_cmp_jnz.original_bin"],
-            "args": ["${workspaceFolder}/asm/listing_0041_add_sub_cmp_jnz"],
+            "args": ["${workspaceFolder}/asm/listing_0042_completionist_decode.original_bin"],
             // "args": ["${workspaceFolder}/asm/test.original_bin"],
             // "args": ["${workspaceFolder}/asm/listing_0038_many_register_mov.original_bin"],
             "stopAtEntry": false,

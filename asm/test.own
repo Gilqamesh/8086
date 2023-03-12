@@ -1,8 +1,5 @@
 ; test.original_bin disassembly:
 bits 16
-label_1:
-jnz label_0
-jnz label_1
-label_0:
-jnz label_1
-jnz label_0
+in al, 200
+in al, dx
+in ax, dx
