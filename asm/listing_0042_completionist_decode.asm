@@ -339,6 +339,8 @@ rep lodsw
 rep stosb
 rep stosw
 
+call 32000
+call -15932
 call [39201]
 call [bp - 100]
 call sp
