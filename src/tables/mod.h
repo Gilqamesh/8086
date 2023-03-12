@@ -24,12 +24,12 @@ void mod__immediate_signed_8_bit_ea(int s, int w, int r_m, struct opcode_context
 void mod__immediate_signed_16_bit_ea(int s, int w, int r_m, struct opcode_context* context, struct instruction* instruction);
 void mod__immediate_signed_register_mode_no_ea(int s, int w, int r_m, struct opcode_context* context, struct instruction* instruction);
 
-typedef void (*const mod_source_only_handler)(int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
+typedef void (*const mod_source_only_handler)(int w, int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
 
-void mod__source_only___no_ea(int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
-void mod__source_only__8_bit_ea(int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
-void mod__source_only__16_bit_ea(int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
-void mod__source_only__register_mode_no_ea(int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
+void mod__source_only___no_ea(int w, int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
+void mod__source_only__8_bit_ea(int w, int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
+void mod__source_only__16_bit_ea(int w, int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
+void mod__source_only__register_mode_no_ea(int w, int reg_or_r_m, struct opcode_context* context, struct instruction* instruction);
 
 static const mod_handler mod_handlers[4] = {
     mod__no_ea,

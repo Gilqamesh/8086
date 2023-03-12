@@ -1,5 +1,22 @@
 ; test.original_bin disassembly:
 bits 16
-in al, 200
-in al, dx
-in ax, dx
+rep
+movsb
+rep
+cmpsb
+rep
+scasb
+rep
+lodsb
+rep
+movsw
+rep
+cmpsw
+rep
+scasw
+rep
+lodsw
+rep
+stosb
+rep
+stosw
