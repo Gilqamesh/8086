@@ -5,14 +5,15 @@
 #include "../label.h"
 #include "../instruction.h"
 
+typedef void (*opcode_error)(const char* msg, ...);
+
 struct opcode_context
 {
     struct file_reader       file_reader;
-    file_reader_error        error_handler;
-
     struct label_list        label_list;
-
     struct instruction_list  instruction_list;
+
+    opcode_error             opcode_error_handler;
 };
 
 typedef void (*opcode_fn)(byte first_byte, struct opcode_context *context);

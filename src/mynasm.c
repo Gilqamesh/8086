@@ -4,7 +4,17 @@
 #include "label.h"
 #include "instruction.h"
 
-void error_handler(const char* msg, enum file_reader_error level) {
+void opcode_error_handler(const char* msg, ...) {
+    va_list ap;
+
+    va_start(ap, msg);
+    vfprintf(stderr, msg, ap);
+    va_end(ap);
+
+    exit(1);
+}
+
+void file_reader_error_handler(const char* msg, enum file_reader_error level) {
     switch (level) {
         case FILE_READER_ERROR_WARN: {
             fprintf(stdout, "%s\n", msg);
@@ -69,9 +79,8 @@ int main(int argc, char **argv)
     }
 
     struct opcode_context  opcode_context;
-    opcode_context.error_handler = &error_handler;
 
-    file_reader__create(&opcode_context.file_reader, argv[1], error_handler);
+    file_reader__create(&opcode_context.file_reader, argv[1], file_reader_error_handler);
     label_list__create(&opcode_context.label_list, label_list_error_handler);
     instruction_list__create(&opcode_context.instruction_list);
 

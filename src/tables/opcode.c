@@ -3807,14 +3807,14 @@ void opcode__segment(byte first_byte, struct opcode_context* context) {
 void opcode__null(byte first_byte, struct opcode_context* context) {
     (void)first_byte;
     (void)context;
-    context->error_handler("in 'opcode__null': not used instruction", FILE_READER_ERROR_FATAL);
+    context->opcode_error_handler("in 'opcode__null': not used instruction");
 }
 
 void opcode__cont_null(byte first_byte, byte second_byte, struct opcode_context* context) {
     (void)first_byte;
     (void)second_byte;
     (void)context;
-    context->error_handler("in 'opcode__null': not used instruction", FILE_READER_ERROR_FATAL);
+    context->opcode_error_handler("in 'opcode__null': not used instruction");
 }
 
 void opcode__ss(byte first_byte, struct opcode_context* context) {
