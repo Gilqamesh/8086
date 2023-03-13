@@ -4,8 +4,9 @@ const char* label__get_name(struct label* label) {
     return label->name;
 }
 
-void label_list__create(struct label_list* self) {
+void label_list__create(struct label_list* self, label_list_error error_handler) {
     self->labels               = NULL;
+    self->error_handler        = error_handler;
     self->unique_label_counter = 0;
 }
 
@@ -17,15 +18,16 @@ void label_list__destroy(struct label_list* self) {
     }
 }
 
-int32_t label_list__insert(struct label_list* self, uint32_t instruction_pointer, const char* label_name) {
+struct label* label_list__insert(struct label_list* self, uint32_t instruction_pointer, const char* label_name) {
     struct label** current_label_pointer = &self->labels;
 
     while (*current_label_pointer && instruction_pointer >= (*current_label_pointer)->instruction_pointer) {
         if ((*current_label_pointer)->instruction_pointer == instruction_pointer) {
             if (strcmp(label_name, (*current_label_pointer)->name) == 0) {
-                return (*current_label_pointer)->unique_label_id;
+                return (*current_label_pointer);
             }
-            return -1;
+            self->error_handler(LABEL_LIST_ERROR__LABEL_ALREADY_EXISTS, "label_list__insert: label '%s' already exists under the provided instruction pointer '%d'", label_name, instruction_pointer);
+            return NULL;
         }
         current_label_pointer = &(*current_label_pointer)->next;
     }
@@ -36,11 +38,12 @@ int32_t label_list__insert(struct label_list* self, uint32_t instruction_pointer
     (*current_label_pointer)->unique_label_id = self->unique_label_counter++;
     (*current_label_pointer)->next = current_label;
     (*current_label_pointer)->instruction_pointer = instruction_pointer;
-    uint32_t name_index = 0;
-    while (name_index < sizeof((*current_label_pointer)->name) - 1 && label_name[name_index] != '\0') {
-        ++name_index;
+    if ((int)sizeof((*current_label_pointer)->name) <= snprintf((*current_label_pointer)->name, sizeof((*current_label_pointer)->name), "%s%d", label_name, (*current_label_pointer)->unique_label_id)) {
+        self->error_handler(LABEL_LIST_ERROR__LABEL_TRUNCATED, "label_list__insert: label name '%s' + unique id '%d' was truncated to '%s'", label_name, (*current_label_pointer)->unique_label_id, (*current_label_pointer)->name);
+        --self->unique_label_counter;
+        (*current_label_pointer) = current_label;
+        return NULL;
     }
-    (*current_label_pointer)->name[name_index] = '\0';
 
-    return (*current_label_pointer)->unique_label_id;
+    return (*current_label_pointer);
 }

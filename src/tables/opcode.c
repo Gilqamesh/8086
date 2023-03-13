@@ -21,7 +21,7 @@ void opcode__mov_1000_10xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -50,7 +50,7 @@ void opcode__mov_1100_011x(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "mov ");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
@@ -82,7 +82,7 @@ void opcode__mov_1011_xxxx(byte first_byte, struct opcode_context* context) {
     int reg = first_byte & 0b111;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     instruction__push(
         &instruction,
@@ -114,7 +114,7 @@ void opcode__mov_1010_000x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word addr = 0;
-    file_reader__read_word(&context->file_reader, &addr, context->error_handler);
+    file_reader__read_word(&context->file_reader, &addr);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -147,7 +147,7 @@ void opcode__mov_1010_001x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word addr = 0;
-    file_reader__read_word(&context->file_reader, &addr, context->error_handler);
+    file_reader__read_word(&context->file_reader, &addr);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -325,7 +325,7 @@ void opcode__pop_1000_1111(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "pop ");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
@@ -409,7 +409,7 @@ void opcode__xchg_1000_011x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -452,7 +452,7 @@ void opcode__in_1110_010x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte data;
-    file_reader__read_byte(&context->file_reader, &data, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &data);
 
     instruction__push(
         &instruction,
@@ -501,7 +501,7 @@ void opcode__out_1110_011x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte data;
-    file_reader__read_byte(&context->file_reader, &data, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &data);
 
     instruction__push(
         &instruction,
@@ -593,7 +593,7 @@ void opcode__lea(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "lea ");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -633,7 +633,7 @@ void opcode__lds(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "lds ");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -672,7 +672,7 @@ void opcode__les(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "les ");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -809,7 +809,7 @@ void opcode__add_0000_00xx(byte first_byte, struct opcode_context* context) {
     int w   = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -871,7 +871,7 @@ void opcode__add_0000_010x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -912,7 +912,7 @@ void opcode__adc_0001_00xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -983,7 +983,7 @@ void opcode__adc_0001_010x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -1130,7 +1130,7 @@ void opcode__sub_0010_10xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -1194,7 +1194,7 @@ void opcode__sub_0010_110x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -1236,7 +1236,7 @@ void opcode__sbb_0001_10xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -1307,7 +1307,7 @@ void opcode__sbb_0001_110x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -1436,7 +1436,7 @@ void opcode__cmp_0011_10xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -1508,7 +1508,7 @@ void opcode__cmp_0011_110x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -1675,7 +1675,7 @@ void opcode__aam(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "aam ");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     instruction_list__push(&context->instruction_list, instruction);
 
@@ -1792,7 +1792,7 @@ void opcode__aad(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "aad");
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     instruction_list__push(&context->instruction_list, instruction);
 
@@ -2144,7 +2144,7 @@ void opcode__and_0010_00xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -2205,7 +2205,7 @@ void opcode__and_0010_010x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -2248,7 +2248,7 @@ void opcode__test_1000_010x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -2315,7 +2315,7 @@ void opcode__test_1010_100x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -2353,7 +2353,7 @@ void opcode__or_0000_10xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -2418,7 +2418,7 @@ void opcode__or_0000_110x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -2454,7 +2454,7 @@ void opcode__xor_0011_00xx(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     int mod = (second_byte >> 6) & 0b11;
     int reg = (second_byte >> 3) & 0b111;
@@ -2514,7 +2514,7 @@ void opcode__xor_0011_010x(byte first_byte, struct opcode_context* context) {
     int w = first_byte & 0b1;
 
     word data = 0;
-    file_reader__read_by_type[w](&context->file_reader, &data, context->error_handler);
+    file_reader__read_by_type[w](&context->file_reader, &data);
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
@@ -2838,7 +2838,7 @@ void opcode__call_1110_1000(byte first_byte, struct opcode_context* context) {
 
 
     signed_word instruction_pointer_increment;
-    file_reader__read_word(&context->file_reader, &instruction_pointer_increment, context->error_handler);
+    file_reader__read_word(&context->file_reader, &instruction_pointer_increment);
 
     uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader);
     instruction__push(
@@ -2996,24 +2996,23 @@ void opcode__call_1001_1010(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "call ");
 
     signed_word ip;
-    file_reader__read_word(&context->file_reader, &ip, context->error_handler);
+    file_reader__read_word(&context->file_reader, &ip);
 
     word cs;
-    file_reader__read_word(&context->file_reader, &cs, context->error_handler);
+    file_reader__read_word(&context->file_reader, &cs);
 
-    uint32_t function_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + ip;
-    label_list__insert(&context->label_list, function_instruction_pointer, "func");
+    uint32_t function_instruction_pointer = ip;
+    struct label* label = label_list__insert(&context->label_list, function_instruction_pointer, "func");
 
-    uint32_t unique_function_id;
-    if (!label_list__get_unique_id(&context->label_list, function_instruction_pointer, &unique_function_id)) {
-        context->error_handler("Couldn't find the recently inserted unique id", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%u:func%u",
+        "%u:%s",
         cs,
-        unique_function_id
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3082,21 +3081,19 @@ void opcode__je_jz(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "je ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
 
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3116,21 +3113,19 @@ void opcode__jl_jnge(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jl ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3150,21 +3145,19 @@ void opcode__jle_jng(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jle ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3184,21 +3177,19 @@ void opcode__jb_jnae(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jb ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3218,21 +3209,19 @@ void opcode__jbe_jna(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jbe ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3252,21 +3241,19 @@ void opcode__jp_jpe(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jp ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3286,21 +3273,19 @@ void opcode__jo(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jo ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3320,21 +3305,19 @@ void opcode__js(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "js ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3354,21 +3337,19 @@ void opcode__jne_jnz(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jnz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3388,21 +3369,19 @@ void opcode__jnl_jge(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jnl ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3422,21 +3401,19 @@ void opcode__jnle_jg(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jg ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3456,21 +3433,19 @@ void opcode__jnb_jae(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jnb ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3490,21 +3465,19 @@ void opcode__jnbe_ja(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "ja ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3524,21 +3497,19 @@ void opcode__jnp_jpo(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jnp ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3558,21 +3529,19 @@ void opcode__jno(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jno ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3592,21 +3561,19 @@ void opcode__jns(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jns ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3626,21 +3593,19 @@ void opcode__loop(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "loop ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3660,21 +3625,19 @@ void opcode__loopz_loope(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "loopz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s_%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3694,21 +3657,19 @@ void opcode__loopnz_loopne(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "loopnz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer, "label");
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
     
-    int32_t label_unique_id = label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id);
-    if (label_unique_id == -1) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3728,21 +3689,19 @@ void opcode__jcxz(byte first_byte, struct opcode_context* context) {
     instruction__push(&instruction, "jcxz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
-    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
 
     uint32_t label_instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) + signed_increment_to_instruction_pointer;
-    label_list__insert(&context->label_list, label_instruction_pointer, "label");
-    
-    uint32_t label_unique_id;
-    if (!label_list__get_unique_id(&context->label_list, label_instruction_pointer, &label_unique_id)) {
-        context->error_handler("Couldn't find just inserted label by its instruction pointer", FILE_READER_ERROR_FATAL);
+    struct label* label = label_list__insert(&context->label_list, label_instruction_pointer, "label");
+
+    if (label == NULL) {
+        return ;
     }
 
     instruction__push(
         &instruction,
-        "%s%u",
-        "label",
-        label_unique_id
+        "%s",
+        label->name
     );
 
     instruction_list__push(&context->instruction_list, instruction);
@@ -3912,7 +3871,7 @@ void opcode__1000_000x(byte first_byte, struct opcode_context* context) {
     };
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     byte reg = (second_byte >> 3) & 0b111;
     opcode_handlers[reg](first_byte, second_byte, context);
@@ -3933,7 +3892,7 @@ void opcode__1000_001x(byte first_byte, struct opcode_context* context) {
     };
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     byte reg = (second_byte >> 3) & 0b111;
     opcode_handlers[reg](first_byte, second_byte, context);
@@ -3952,7 +3911,7 @@ void opcode__1101_00xx(byte first_byte, struct opcode_context* context) {
     };
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     byte reg = (second_byte >> 3) & 0b111;
     opcode_handler[reg](first_byte, second_byte, context);
@@ -3979,7 +3938,7 @@ void opcode__1111_011x(byte first_byte, struct opcode_context* context) {
     };
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     byte reg = (second_byte >> 3) & 0b111;
     opcode_handler[reg](first_byte, second_byte, context);
@@ -3998,7 +3957,7 @@ void opcode__1111_1110(byte first_byte, struct opcode_context* context) {
     };
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     byte reg = (second_byte >> 3) & 0b111;
     opcode_handler[reg](first_byte, second_byte, context);
@@ -4020,7 +3979,7 @@ void opcode__1111_1111(byte first_byte, struct opcode_context* context) {
     };
 
     byte second_byte;
-    file_reader__read_byte(&context->file_reader, &second_byte, context->error_handler);
+    file_reader__read_byte(&context->file_reader, &second_byte);
 
     byte reg = (second_byte >> 3) & 0b111;
     opcode_handler[reg](first_byte, second_byte, context);

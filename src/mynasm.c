@@ -14,34 +14,33 @@ void error_handler(const char* msg, enum file_reader_error level) {
             exit(1);
         } break ;
         default: {
-            assert(false && "log_level is not handled");
+            fprintf(stderr, "level = %d\n", level);
+            assert(false && "level handle isn't implemented");
         }
     }
 }
 
-void label_list__print(struct label_list* self) {
-    struct label* cur_label = self->labels;
+void label_list_error_handler(enum label_list_error error, const char* msg, ...) {
+    va_list ap;
 
-    printf("  ----==Labels==----  \n");
-    while (cur_label) {
-        printf(
-            "    ip:  %d\n"
-            "    uid: %d\n\n",
-            cur_label->instruction_pointer,
-            cur_label->unique_label_id);
-        cur_label = cur_label->next;
+    va_start(ap, msg);
+    switch (error) {
+        case LABEL_LIST_ERROR__LABEL_TRUNCATED: {
+            fprintf(stdout, "[Warn] ");
+            vfprintf(stdout, msg, ap);
+            fprintf(stdout, "\n");
+        } break ;
+        case LABEL_LIST_ERROR__LABEL_ALREADY_EXISTS: {
+            fprintf(stdout, "[Warn] ");
+            vfprintf(stdout, msg, ap);
+            fprintf(stdout, "\n");
+        } break ;
+        default: {
+            fprintf(stderr, "error = %d\n", error);
+            assert(false && "error handle isn't implemented");
+        }
     }
-    printf("\n");
-}
-
-void instruction_list__print(struct instruction_list* self) {
-    printf("  ----==Instructions==----  \n");
-    for (uint32_t instruction_index = 0; instruction_index < self->instructions_fill; ++instruction_index) {
-        printf(
-            "    instruction: %s\n",
-            self->instructions[instruction_index].buffer
-        );
-    }
+    va_end(ap);
 }
 
 void print_disassemble(struct opcode_context* context) {
@@ -50,10 +49,15 @@ void print_disassemble(struct opcode_context* context) {
     for (uint32_t instruction_index = 0; instruction_index < context->instruction_list.instructions_fill; ++instruction_index) {
         uint32_t cur_instruction_pointer = context->instruction_list.instructions[instruction_index].instruction_pointer;
         if (cur_label && cur_label->instruction_pointer == cur_instruction_pointer) {
-            printf("%s%d:\n", cur_label->name, cur_label->unique_label_id);
+            printf("%s:\n", cur_label->name);
             cur_label = cur_label->next;
         }
         printf("%s\n", context->instruction_list.instructions[instruction_index].buffer);
+    }
+
+    while (cur_label) {
+        printf("%s:\n", cur_label->name);
+        cur_label = cur_label->next;
     }
 }
 
@@ -68,13 +72,13 @@ int main(int argc, char **argv)
     opcode_context.error_handler = &error_handler;
 
     file_reader__create(&opcode_context.file_reader, argv[1], error_handler);
-    label_list__create(&opcode_context.label_list);
+    label_list__create(&opcode_context.label_list, label_list_error_handler);
     instruction_list__create(&opcode_context.instruction_list);
 
     printf("; %s disassembly:\nbits 16\n", argv[1]);
     while (file_reader__eof_reached(&opcode_context.file_reader) == false) {
         byte first_byte;
-        file_reader__read_byte(&opcode_context.file_reader, &first_byte, error_handler);
+        file_reader__read_byte(&opcode_context.file_reader, &first_byte);
         opcode_handlers[first_byte](first_byte, &opcode_context);
     }
 

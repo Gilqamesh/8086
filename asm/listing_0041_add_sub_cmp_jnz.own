@@ -1,5 +1,26 @@
 ; listing_0041_add_sub_cmp_jnz.original_bin disassembly:
 bits 16
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '199'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '203'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
+[Warn] label_list__insert: label 'label' already exists under the provided instruction pointer '207'
 add bx, [bx + si]
 add bx, [bp]
 add si, 2
@@ -72,30 +93,9 @@ cmp al, ah
 cmp ax, 1000
 cmp al, 226
 cmp al, 9
-label_1:
-jnz label_0
-jnz label_1
-label_0:
-jnz label_1
-jnz label_0
-label_2:
-je label_2
-jl label_2
-jle label_2
-jb label_2
-jbe label_2
-jp label_2
-jo label_2
-js label_2
-jnz label_2
-jnl label_2
-jg label_2
-jnb label_2
-ja label_2
-jnp label_2
-jno label_2
-jns label_2
-loop label_2
-loopz label_2
-loopnz label_2
-jcxz label_2
+label1:
+jnz label0
+jnz label1
+je label2
+label0:
+label2:
