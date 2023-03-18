@@ -77,9 +77,9 @@ xchg ax, sp
 xchg ax, si
 xchg ax, di
 
-xchg cx, dx
-xchg si, cx
-xchg cl, ah
+; xchg cx, dx
+; xchg si, cx
+; xchg cl, ah
 
 in al, 200
 in al, dx

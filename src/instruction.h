@@ -6,12 +6,14 @@ struct instruction
 {
     uint32_t  instruction_pointer;
     byte      buffer_fill;
-    char      buffer[59];
+    char      segment_override_prefix[3];
+    char      buffer[56];
 };
 static_assert(sizeof(struct instruction) == 64, "");
 
-void instruction__create(struct instruction* self, uint32_t instruction_pointer);
 bool instruction__push(struct instruction* self, const char* msg, ...);
+void instruction__set_instruction_pointer(struct instruction* self, uint32_t instruction_pointer);
+void instruction__set_segment_override_prefix(struct instruction* self, enum segment_registries segment_register);
 
 struct instruction_list
 {
@@ -22,4 +24,7 @@ struct instruction_list
 
 bool instruction_list__create(struct instruction_list* self);
 void instruction_list__destroy(struct instruction_list* self);
-bool instruction_list__push(struct instruction_list* self, struct instruction instruction);
+
+struct instruction* instruction_list__get(struct instruction_list* self);
+
+bool instruction_list__push(struct instruction_list* self);

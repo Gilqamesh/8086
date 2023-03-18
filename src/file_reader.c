@@ -89,7 +89,7 @@ void file_reader__read_byte(struct file_reader* self, void* out) {
 
     *(byte*)out = file_reader_read_byte(self);
 
-    if (file_reader__read(self, 1) == 0) {
+    if (file_reader__size(self) == 0 && file_reader__read(self, 1) == 0) {
         self->eof = true;
     }
 }

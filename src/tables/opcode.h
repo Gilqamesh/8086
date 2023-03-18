@@ -263,6 +263,8 @@ opcode(jmp_1110_1001);
 opcode(jmp_1110_1011);
 // @brief unconditional jump, (indirect within segment) / (indirect intersegment)
 opcode_cont(jmp_1111_1111);
+opcode_cont(jmp_1111_1111__indirect_within_segment);
+opcode_cont(jmp_1111_1111__indirect_intersegment);
 // @brief unconditional jump, direct intersegment
 opcode(jmp_1110_1010);
 
@@ -385,14 +387,7 @@ opcode(segment);
 // @brief not used
 opcode(null);
 opcode_cont(null);
-// @brief segment override prefix (stack segment register)
-opcode(ss);
-// @brief segment override prefix (code segment register)
-opcode(cs);
-// @brief segment override prefix (data segment register)
-opcode(ds);
-// @brief segment override prefix (extra segment register)
-opcode(es);
+
 // @brief nop instruction
 opcode(nop);
 // @brief dispatches the 1000 000x bytes to the right opcode
@@ -424,14 +419,14 @@ static const opcode_fn opcode_handlers[256] = {
     OPCODE(sbb_0001_10xx), OPCODE(sbb_0001_10xx), OPCODE(sbb_0001_10xx), OPCODE(sbb_0001_10xx), OPCODE(sbb_0001_110x), OPCODE(sbb_0001_110x), OPCODE(push_000x_x110), OPCODE(pop_000x_x111),
 
     // 0010 0000 - 0010 0111
-    OPCODE(and_0010_00xx), OPCODE(and_0010_00xx), OPCODE(and_0010_00xx), OPCODE(and_0010_00xx), OPCODE(and_0010_010x), OPCODE(and_0010_010x), OPCODE(es), OPCODE(daa),
+    OPCODE(and_0010_00xx), OPCODE(and_0010_00xx), OPCODE(and_0010_00xx), OPCODE(and_0010_00xx), OPCODE(and_0010_010x), OPCODE(and_0010_010x), OPCODE(segment), OPCODE(daa),
     // 0010 1000 - 0010 1111
-    OPCODE(sub_0010_10xx), OPCODE(sub_0010_10xx), OPCODE(sub_0010_10xx), OPCODE(sub_0010_10xx), OPCODE(sub_0010_110x), OPCODE(sub_0010_110x), OPCODE(cs), OPCODE(das),
+    OPCODE(sub_0010_10xx), OPCODE(sub_0010_10xx), OPCODE(sub_0010_10xx), OPCODE(sub_0010_10xx), OPCODE(sub_0010_110x), OPCODE(sub_0010_110x), OPCODE(segment), OPCODE(das),
 
     // 0011 0000 - 0011 0111
-    OPCODE(xor_0011_00xx), OPCODE(xor_0011_00xx), OPCODE(xor_0011_00xx), OPCODE(xor_0011_00xx), OPCODE(xor_0011_010x), OPCODE(xor_0011_010x), OPCODE(ss), OPCODE(aaa),
+    OPCODE(xor_0011_00xx), OPCODE(xor_0011_00xx), OPCODE(xor_0011_00xx), OPCODE(xor_0011_00xx), OPCODE(xor_0011_010x), OPCODE(xor_0011_010x), OPCODE(segment), OPCODE(aaa),
     // 0011 1000 - 0011 1111
-    OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_110x), OPCODE(cmp_0011_110x), OPCODE(ds), OPCODE(aas),
+    OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_10xx), OPCODE(cmp_0011_110x), OPCODE(cmp_0011_110x), OPCODE(segment), OPCODE(aas),
 
     // 0100 0000 - 0100 0111
     OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx), OPCODE(inc_0100_0xxx),

@@ -1,7 +1,0 @@
-; test.original_bin disassembly:
-bits 16
-call 12:func0
-call 12:func1
-func0:
-mov ax, 10
-func1:

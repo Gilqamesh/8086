@@ -12,10 +12,10 @@ void opcode__mov_1000_10xx(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -27,9 +27,9 @@ void opcode__mov_1000_10xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -44,10 +44,10 @@ void opcode__mov_1100_011x(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
@@ -56,9 +56,9 @@ void opcode__mov_1100_011x(byte first_byte, struct opcode_context* context) {
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_handlers[mod](w, r_m, context, &instruction);
+    mod_immediate_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -73,10 +73,10 @@ void opcode__mov_1011_xxxx(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     int w   = (first_byte >> 3) & 0b1;
     int reg = first_byte & 0b111;
@@ -85,13 +85,13 @@ void opcode__mov_1011_xxxx(byte first_byte, struct opcode_context* context) {
     file_reader__read_by_type[w](&context->file_reader, &data);
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(reg, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -106,10 +106,10 @@ void opcode__mov_1010_000x(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     int w = first_byte & 0b1;
 
@@ -118,13 +118,13 @@ void opcode__mov_1010_000x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, [%u]",
         reg_to_word(0, w),
         addr
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -139,10 +139,10 @@ void opcode__mov_1010_001x(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     int w = first_byte & 0b1;
 
@@ -151,13 +151,13 @@ void opcode__mov_1010_001x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "[%u], %s",
         addr,
         reg_to_word(0, w)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -172,16 +172,16 @@ void opcode__mov_1000_1110(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     (void)first_byte;
     (void)context;
     assert(false && "TODO(david): implement how to dispatch 0SR");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -196,16 +196,16 @@ void opcode__mov_1000_1100(byte first_byte, struct opcode_context* context) {
         operand to the destination operand.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mov ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mov ");
 
     (void)first_byte;
     (void)context;
     assert(false && "TODO(david): implement how to dispatch 0SR");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -226,17 +226,17 @@ void opcode__cont_push_1111_1111(byte first_byte, byte second_byte, struct opcod
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
     
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "push ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "push ");
 
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](1, r_m, context, &instruction);
+    mod_source_only_handlers[mod](1, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -255,20 +255,20 @@ void opcode__push_0101_0xxx(byte first_byte, struct opcode_context* context) {
         the stack. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "push ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "push ");
 
     int reg = first_byte & 0b111;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         reg_to_word(reg, 1)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -287,20 +287,20 @@ void opcode__push_000x_x110(byte first_byte, struct opcode_context* context) {
         the stack. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "push ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "push ");
 
     int reg = (first_byte >> 3) & 0b11;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         segment_reg_to_word(reg)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -319,10 +319,10 @@ void opcode__pop_1000_1111(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
     
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "pop ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "pop ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
@@ -330,9 +330,9 @@ void opcode__pop_1000_1111(byte first_byte, struct opcode_context* context) {
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](1, r_m, context, &instruction);
+    mod_source_only_handlers[mod](1, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -349,20 +349,20 @@ void opcode__pop_0101_1xxx(byte first_byte, struct opcode_context* context) {
         memory. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "pop ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "pop ");
 
     int reg = first_byte & 0b111;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         reg_to_word(reg, 1)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -379,20 +379,20 @@ void opcode__pop_000x_x111(byte first_byte, struct opcode_context* context) {
         memory. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "pop ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "pop ");
 
     int reg = (first_byte >> 3) & 0b11;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         segment_reg_to_word(reg)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -401,10 +401,10 @@ void opcode__xchg_1000_011x(byte first_byte, struct opcode_context* context) {
     // Register/memory with register
     // 1000 011w    mod reg r/m    (DISP-LO)    (DISP-HI)
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "xchg ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "xchg ");
 
     int w = first_byte & 0b1;
 
@@ -415,9 +415,9 @@ void opcode__xchg_1000_011x(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, 1, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, 0, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -426,16 +426,16 @@ void opcode__xchg_1001_0xxx(byte first_byte, struct opcode_context* context) {
     // Register with accumulator
     // 1001 0reg
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "xchg ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "xchg ");
 
     int reg = first_byte & 0b111;
 
-    mod__register_mode_no_ea(1, 0, reg, AX, context, &instruction);
+    mod__register_mode_no_ea(1, 0, reg, AX, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -444,10 +444,10 @@ void opcode__in_1110_010x(byte first_byte, struct opcode_context* context) {
     // Fixed port
     // 1110 010w    DATA-8
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "in ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "in ");
 
     int w = first_byte & 0b1;
 
@@ -455,13 +455,13 @@ void opcode__in_1110_010x(byte first_byte, struct opcode_context* context) {
     file_reader__read_byte(&context->file_reader, &data);
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         w ? reg_to_word(AX, 1) : reg_to_word(AL, 0),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -470,21 +470,21 @@ void opcode__in_1110_110x(byte first_byte, struct opcode_context* context) {
     // Variable port
     // 1110 110w
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "in ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "in ");
 
     int w = first_byte & 0b1;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %s",
         w ? reg_to_word(AX, 1) : reg_to_word(AL, 0),
         "dx"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -493,10 +493,10 @@ void opcode__out_1110_011x(byte first_byte, struct opcode_context* context) {
     // Fixed port
     // 1110 011w    DATA-8
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "out ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "out ");
 
     int w = first_byte & 0b1;
 
@@ -504,13 +504,13 @@ void opcode__out_1110_011x(byte first_byte, struct opcode_context* context) {
     file_reader__read_byte(&context->file_reader, &data);
 
     instruction__push(
-        &instruction,
+        instruction,
         "%u, %s",
         data,
         w ? reg_to_word(AX, 1) : reg_to_word(AL, 0)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -519,21 +519,21 @@ void opcode__out_1110_111x(byte first_byte, struct opcode_context* context) {
     // Variable port
     // 1110 111w
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "out ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "out ");
 
     int w = first_byte & 0b1;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %s",
         "dx",
         w ? reg_to_word(AX, 1) : reg_to_word(AL, 0)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -559,12 +559,12 @@ void opcode__xlat(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "xlat");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "xlat");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -587,10 +587,10 @@ void opcode__lea(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "lea ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "lea ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
@@ -599,9 +599,9 @@ void opcode__lea(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](1, 1, reg, r_m, context, &instruction);
+    mod_handlers[mod](1, 1, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -627,10 +627,10 @@ void opcode__lds(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "lds ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "lds ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
@@ -639,9 +639,9 @@ void opcode__lds(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](1, 1, reg, r_m, context, &instruction);
+    mod_handlers[mod](1, 1, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -666,10 +666,10 @@ void opcode__les(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "les ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "les ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
@@ -678,9 +678,9 @@ void opcode__les(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](1, 1, reg, r_m, context, &instruction);
+    mod_handlers[mod](1, 1, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -702,12 +702,12 @@ void opcode__lahf(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "lahf");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "lahf");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -727,12 +727,12 @@ void opcode__sahf(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sahf");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sahf");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 }
 
 void opcode__pushf(byte first_byte, struct opcode_context* context) {
@@ -749,12 +749,12 @@ void opcode__pushf(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "pushf");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "pushf");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 }
 
 void opcode__popf(byte first_byte, struct opcode_context* context) {
@@ -778,12 +778,12 @@ void opcode__popf(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "popf");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "popf");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -800,10 +800,10 @@ void opcode__add_0000_00xx(byte first_byte, struct opcode_context* context) {
         CF, OF, PF, SF and ZF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "add ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "add ");
 
     int d   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
@@ -815,9 +815,9 @@ void opcode__add_0000_00xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -834,19 +834,19 @@ void opcode__cont_add_1000_00xx(byte first_byte, byte second_byte, struct opcode
         CF, OF, PF, SF and ZF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "add ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "add ");
 
     int s   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_signed_handlers[mod](s, w, r_m, context, &instruction);
+    mod_immediate_signed_handlers[mod](s, w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -863,10 +863,10 @@ void opcode__add_0000_010x(byte first_byte, struct opcode_context* context) {
         CF, OF, PF, SF and ZF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "add ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "add ");
 
     int w = first_byte & 0b1;
 
@@ -875,13 +875,13 @@ void opcode__add_0000_010x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -903,10 +903,10 @@ void opcode__adc_0001_00xx(byte first_byte, struct opcode_context* context) {
         bits. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "adc ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "adc ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -918,9 +918,9 @@ void opcode__adc_0001_00xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -942,19 +942,19 @@ void opcode__cont_adc_1000_00xx(byte first_byte, byte second_byte, struct opcode
         bits. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "adc ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "adc ");
 
     int s = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_signed_handlers[mod](s, w, r_m, context, &instruction);
+    mod_immediate_signed_handlers[mod](s, w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 }
 
 void opcode__adc_0001_010x(byte first_byte, struct opcode_context* context) {
@@ -975,10 +975,10 @@ void opcode__adc_0001_010x(byte first_byte, struct opcode_context* context) {
         bits. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "adc ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "adc ");
 
     int w = first_byte & 0b1;
 
@@ -987,13 +987,13 @@ void opcode__adc_0001_010x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1011,18 +1011,18 @@ void opcode__cont_inc_1111_111x(byte first_byte, byte second_byte, struct opcode
         and ZF; it does not affect CF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "inc ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "inc ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1040,20 +1040,20 @@ void opcode__inc_0100_0xxx(byte first_byte, struct opcode_context* context) {
         and ZF; it does not affect CF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "inc ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "inc ");
 
     int reg = first_byte & 0b111;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         reg_to_word(reg, 1)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1072,12 +1072,12 @@ void opcode__aaa(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "aaa");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "aaa");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1098,12 +1098,12 @@ void opcode__daa(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "daa");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "daa");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1121,10 +1121,10 @@ void opcode__sub_0010_10xx(byte first_byte, struct opcode_context* context) {
         SUB updates AF, CF, OF, PF, SF and ZF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sub ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sub ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -1136,9 +1136,9 @@ void opcode__sub_0010_10xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1156,19 +1156,19 @@ void opcode__cont_sub_1000_00xx(byte first_byte, byte second_byte, struct opcode
         SUB updates AF, CF, OF, PF, SF and ZF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sub ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sub ");
 
     int s   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_signed_handlers[mod](s, w, r_m, context, &instruction);
+    mod_immediate_signed_handlers[mod](s, w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1186,10 +1186,10 @@ void opcode__sub_0010_110x(byte first_byte, struct opcode_context* context) {
         SUB updates AF, CF, OF, PF, SF and ZF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sub ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sub ");
 
     int w = first_byte & 0b1;
 
@@ -1198,13 +1198,13 @@ void opcode__sub_0010_110x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1227,10 +1227,10 @@ void opcode__sbb_0001_10xx(byte first_byte, struct opcode_context* context) {
         longer than 16 bits. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sbb ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sbb ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -1242,9 +1242,9 @@ void opcode__sbb_0001_10xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1266,19 +1266,19 @@ void opcode__cont_sbb_1000_00xx(byte first_byte, byte second_byte, struct opcode
         longer than 16 bits. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sbb ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sbb ");
 
     int s   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_signed_handlers[mod](s, w, r_m, context, &instruction);
+    mod_immediate_signed_handlers[mod](s, w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 }
 
 void opcode__sbb_0001_110x(byte first_byte, struct opcode_context* context) {
@@ -1299,10 +1299,10 @@ void opcode__sbb_0001_110x(byte first_byte, struct opcode_context* context) {
         longer than 16 bits. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sbb ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sbb ");
 
     int w = first_byte & 0b1;
 
@@ -1311,13 +1311,13 @@ void opcode__sbb_0001_110x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1332,18 +1332,18 @@ void opcode__cont_dec_1111_111x(byte first_byte, byte second_byte, struct opcode
         updates AF, OF, PF, SF, and ZF; it does not affect CF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "dec ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "dec ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1358,20 +1358,20 @@ void opcode__dec_0100_1xxx(byte first_byte, struct opcode_context* context) {
         updates AF, OF, PF, SF, and ZF; it does not affect CF. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "dec ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "dec ");
 
     int reg = first_byte & 0b111;
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         reg_to_word(reg, 1)
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1394,18 +1394,18 @@ void opcode__cont_neg(byte first_byte, byte second_byte, struct opcode_context* 
         in which case it is cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "neg ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "neg ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1427,10 +1427,10 @@ void opcode__cmp_0011_10xx(byte first_byte, struct opcode_context* context) {
         operand is greater than the source operand. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "cmp ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "cmp ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -1442,9 +1442,9 @@ void opcode__cmp_0011_10xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1466,19 +1466,19 @@ void opcode__cont_cmp_1000_00xx(byte first_byte, byte second_byte, struct opcode
         operand is greater than the source operand. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "cmp ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "cmp ");
 
     int s   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_signed_handlers[mod](s, w, r_m, context, &instruction);
+    mod_immediate_signed_handlers[mod](s, w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1500,10 +1500,10 @@ void opcode__cmp_0011_110x(byte first_byte, struct opcode_context* context) {
         operand is greater than the source operand. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "cmp ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "cmp ");
 
     int w = first_byte & 0b1;
 
@@ -1512,13 +1512,13 @@ void opcode__cmp_0011_110x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1540,12 +1540,12 @@ void opcode__aas(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "aas");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "aas");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1567,12 +1567,12 @@ void opcode__das(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "das");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "das");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1598,18 +1598,18 @@ void opcode__cont_mul(byte first_byte, byte second_byte, struct opcode_context* 
         MUL. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "mul ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "mul ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1635,18 +1635,18 @@ void opcode__cont_imul(byte first_byte, byte second_byte, struct opcode_context*
         execution of IMUL. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "imul ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "imul ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1669,15 +1669,15 @@ void opcode__aam(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "aam ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "aam ");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1706,18 +1706,18 @@ void opcode__cont_div(byte first_byte, byte second_byte, struct opcode_context* 
         OF, PF, SF and ZF is undefined following execution of DIV. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "div ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "div ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1752,18 +1752,18 @@ void opcode__cont_idiv(byte first_byte, byte second_byte, struct opcode_context*
         IDIV. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "idiv ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "idiv ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1786,15 +1786,15 @@ void opcode__aad(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "aad");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "aad");
 
     byte second_byte;
     file_reader__read_byte(&context->file_reader, &second_byte);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1813,12 +1813,12 @@ void opcode__cbw(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "cbw");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "cbw");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1837,12 +1837,12 @@ void opcode__cwd(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "cwd");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "cwd");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1855,18 +1855,18 @@ void opcode__cont_not(byte first_byte, byte second_byte, struct opcode_context* 
         NOT inverts the bits (forms the one's complement) of the byte or word operand. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "not ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "not ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1884,25 +1884,25 @@ void opcode__cont_shl_sal(byte first_byte, byte second_byte, struct opcode_conte
         original value, then OF is cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "shl ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "shl ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1919,25 +1919,25 @@ void opcode__cont_shr(byte first_byte, byte second_byte, struct opcode_context* 
         retains its original value, then OF is cleared.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "shr ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "shr ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1963,25 +1963,25 @@ void opcode__cont_sar(byte first_byte, byte second_byte, struct opcode_context* 
         numbers toward negative infinity. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "sar ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "sar ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -1996,25 +1996,25 @@ void opcode__cont_rol(byte first_byte, byte second_byte, struct opcode_context* 
         count operand. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "rol ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "rol ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2029,25 +2029,25 @@ void opcode__cont_ror(byte first_byte, byte second_byte, struct opcode_context* 
         are rotated right instead of left. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "ror ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "ror ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2067,25 +2067,25 @@ void opcode__cont_rcl(byte first_byte, byte second_byte, struct opcode_context* 
         destination.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "rcl ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "rcl ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2100,25 +2100,25 @@ void opcode__cont_rcr(byte first_byte, byte second_byte, struct opcode_context* 
         right instead of left. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "rcr ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "rcr ");
 
     int v   = (first_byte >> 1) & 0b1;
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](w, r_m, context, &instruction);
+    mod_source_only_handlers[mod](w, r_m, context, instruction);
 
     instruction__push(
-        &instruction,
+        instruction,
         ", %s",
         v ? "cl" : "1"
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2135,10 +2135,10 @@ void opcode__and_0010_00xx(byte first_byte, struct opcode_context* context) {
         are set; otherwise the bit is cleared.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "and ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "and ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -2150,9 +2150,9 @@ void opcode__and_0010_00xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2169,18 +2169,18 @@ void opcode__cont_and_1000_000x(byte first_byte, byte second_byte, struct opcode
         are set; otherwise the bit is cleared.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "and ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "and ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_handlers[mod](w, r_m, context, &instruction);
+    mod_immediate_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2197,10 +2197,10 @@ void opcode__and_0010_010x(byte first_byte, struct opcode_context* context) {
         are set; otherwise the bit is cleared.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "and ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "and ");
 
     int w = first_byte & 0b1;
 
@@ -2209,13 +2209,13 @@ void opcode__and_0010_010x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2239,10 +2239,10 @@ void opcode__test_1000_010x(byte first_byte, struct opcode_context* context) {
         be taken if there are any corresponding I-bits in
         both operands. 
     */
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "test ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "test ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -2254,9 +2254,9 @@ void opcode__test_1000_010x(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2276,18 +2276,18 @@ void opcode__cont_test_1111_011x(byte first_byte, byte second_byte, struct opcod
         both operands. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "test ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "test ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_handlers[mod](w, r_m, context, &instruction);
+    mod_immediate_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2307,10 +2307,10 @@ void opcode__test_1010_100x(byte first_byte, struct opcode_context* context) {
         both operands. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "test ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "test ");
 
     int w = first_byte & 0b1;
 
@@ -2319,13 +2319,13 @@ void opcode__test_1010_100x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2344,10 +2344,10 @@ void opcode__or_0000_10xx(byte first_byte, struct opcode_context* context) {
         cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "or ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "or ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -2359,9 +2359,9 @@ void opcode__or_0000_10xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2380,18 +2380,18 @@ void opcode__cont_or_1000_000x(byte first_byte, byte second_byte, struct opcode_
         cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "or ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "or ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_handlers[mod](w, r_m, context, &instruction);
+    mod_immediate_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2410,10 +2410,10 @@ void opcode__or_0000_110x(byte first_byte, struct opcode_context* context) {
         cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "or ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "or ");
 
     int w = first_byte & 0b1;
 
@@ -2422,13 +2422,13 @@ void opcode__or_0000_110x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2445,10 +2445,10 @@ void opcode__xor_0011_00xx(byte first_byte, struct opcode_context* context) {
         otherwise the result bit is cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "xor ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "xor ");
 
     int d = (first_byte >> 1) & 0b1;
     int w = first_byte & 0b1;
@@ -2460,9 +2460,9 @@ void opcode__xor_0011_00xx(byte first_byte, struct opcode_context* context) {
     int reg = (second_byte >> 3) & 0b111;
     int r_m = second_byte & 0b111;
 
-    mod_handlers[mod](w, d, reg, r_m, context, &instruction);
+    mod_handlers[mod](w, d, reg, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2479,18 +2479,18 @@ void opcode__cont_xor_1000_000x(byte first_byte, byte second_byte, struct opcode
         otherwise the result bit is cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "xor ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "xor ");
 
     int w   = first_byte & 0b1;
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_immediate_handlers[mod](w, r_m, context, &instruction);
+    mod_immediate_handlers[mod](w, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2506,10 +2506,10 @@ void opcode__xor_0011_010x(byte first_byte, struct opcode_context* context) {
         otherwise the result bit is cleared. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "xor ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "xor ");
 
     int w = first_byte & 0b1;
 
@@ -2518,13 +2518,13 @@ void opcode__xor_0011_010x(byte first_byte, struct opcode_context* context) {
 
     // NOTE(david): register ax for word transfers, al for bytes
     instruction__push(
-        &instruction,
+        instruction,
         "%s, %u",
         reg_to_word(0, w),
         data
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2574,15 +2574,15 @@ void opcode__rep(byte first_byte, struct opcode_context* context) {
         unable to respond to interrupts may be unacceptable if long strings are being processed. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "rep");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "rep");
 
     int z = first_byte & 0b1;
     (void)z;
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2611,19 +2611,19 @@ void opcode__movs(byte first_byte, struct opcode_context* context) {
         of code is being moved. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
     int w = first_byte & 0b1;
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
     instruction__push(
-        &instruction,
+        instruction,
         "movs%c",
         w ? 'w' : 'b'
     );
 
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2651,19 +2651,19 @@ void opcode__cmps(byte first_byte, struct opcode_context* context) {
         Thus, CMPS can be used to find matching or differing string elements.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
     int w = first_byte & 0b1;
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
     instruction__push(
-        &instruction,
+        instruction,
         "cmps%c",
         w ? 'w' : 'b'
     );
 
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2693,19 +2693,19 @@ void opcode__scas(byte first_byte, struct opcode_context* context) {
         locate a value in a string. 
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
     int w = first_byte & 0b1;
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
     instruction__push(
-        &instruction,
+        instruction,
         "scas%c",
         w ? 'w' : 'b'
     );
 
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2724,19 +2724,19 @@ void opcode__lods(byte first_byte, struct opcode_context* context) {
         primitives and other instructions.
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
     int w = first_byte & 0b1;
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
     instruction__push(
-        &instruction,
+        instruction,
         "lods%c",
         w ? 'w' : 'b'
     );
 
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2753,19 +2753,19 @@ void opcode__stos(byte first_byte, struct opcode_context* context) {
         constant value (e.g., to blank out a print line).
     */
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
     int w = first_byte & 0b1;
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
     instruction__push(
-        &instruction,
+        instruction,
         "stos%c",
         w ? 'w' : 'b'
     );
 
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2831,10 +2831,10 @@ void opcode__call_1110_1000(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "call ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "call ");
 
 
     signed_word instruction_pointer_increment;
@@ -2842,12 +2842,12 @@ void opcode__call_1110_1000(byte first_byte, struct opcode_context* context) {
 
     uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader);
     instruction__push(
-        &instruction,
+        instruction,
         "%d",
         instruction_pointer_increment + instruction_pointer
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2913,17 +2913,17 @@ void opcode__cont_call_1111_1111(byte first_byte, byte second_byte, struct opcod
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "call ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "call ");
 
     int mod = (second_byte >> 6) & 0b11;
     int r_m = second_byte & 0b111;
 
-    mod_source_only_handlers[mod](1, r_m, context, &instruction);
+    mod_source_only_handlers[mod](1, r_m, context, instruction);
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -2990,10 +2990,10 @@ void opcode__call_1001_1010(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "call ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "call ");
 
     signed_word ip;
     file_reader__read_word(&context->file_reader, &ip);
@@ -3009,63 +3009,482 @@ void opcode__call_1001_1010(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%u:%s",
         cs,
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
 void opcode__jmp_1110_1001(byte first_byte, struct opcode_context* context) {
+    
+    // Direct within segment
+    // 1110 1001    IP-INC-LO    IP-INC-HI
+
+    /*
+        JMP unconditionally transfers control to the
+        target location. Unlike a CALL instruction, JMP
+        does not save any information on the stack, and
+        no return to the instruction following the JMP is
+        expected. Like CALL, the address of the target
+        operand may be obtained from the instruction
+        itself (direct JMP) or from memory or a register
+        referenced by the instruction (indirect JMP).
+        An intrasegment direct JMP changes the instruction pointer by adding the relative displacement
+        of the target from the JMP instruction. If the
+        assembler can determine that the target is within
+        127 bytes of the JMP, it automatically generates a
+        two-byte form of this instruction called a SHORT
+        JMP; otherwise, it generates a NEAR JMP that
+        can address a target within ±32k. Intrasegment
+        direct JMPS are self-relative and are appropriate
+        in position-independent (dynamically relocatable)
+        routines in which the JMP and its target are in the
+        same segment and are moved together.
+        An intrasegment indirect JMP may be made
+        either through memory or through a 16-bit
+        general register. In the first case, the content of
+        the word referenced by the instruction replaces
+        the instruction pointer. In the second case, the
+        new IP value is taken from the register named in
+        the instruction.
+        An intersegment direct JMP replaces IP and CS
+        with values contained in the instruction. 
+        An intersegment indirect JMP may be made only
+        through memory. The first word of the
+        doubleword pointer referenced by the instruction
+        replaces IP, and the second word replaces CS. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jmp ");
+
+    signed_word instruction_pointer_increment;
+    file_reader__read_word(&context->file_reader, &instruction_pointer_increment);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader);
+    instruction__push(
+        instruction,
+        "%d",
+        instruction_pointer_increment + instruction_pointer
+    );
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__jmp_1110_1011(byte first_byte, struct opcode_context* context) {
+
+    // Direct within segment-short
+    // 1110 1011    IP-INC8
+
+    /*
+        JMP unconditionally transfers control to the
+        target location. Unlike a CALL instruction, JMP
+        does not save any information on the stack, and
+        no return to the instruction following the JMP is
+        expected. Like CALL, the address of the target
+        operand may be obtained from the instruction
+        itself (direct JMP) or from memory or a register
+        referenced by the instruction (indirect JMP).
+        An intrasegment direct JMP changes the instruction pointer by adding the relative displacement
+        of the target from the JMP instruction. If the
+        assembler can determine that the target is within
+        127 bytes of the JMP, it automatically generates a
+        two-byte form of this instruction called a SHORT
+        JMP; otherwise, it generates a NEAR JMP that
+        can address a target within ±32k. Intrasegment
+        direct JMPS are self-relative and are appropriate
+        in position-independent (dynamically relocatable)
+        routines in which the JMP and its target are in the
+        same segment and are moved together.
+        An intrasegment indirect JMP may be made
+        either through memory or through a 16-bit
+        general register. In the first case, the content of
+        the word referenced by the instruction replaces
+        the instruction pointer. In the second case, the
+        new IP value is taken from the register named in
+        the instruction.
+        An intersegment direct JMP replaces IP and CS
+        with values contained in the instruction. 
+        An intersegment indirect JMP may be made only
+        through memory. The first word of the
+        doubleword pointer referenced by the instruction
+        replaces IP, and the second word replaces CS. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "jmp ");
+
+    signed_byte relative_displacement;
+    file_reader__read_byte(&context->file_reader, &relative_displacement);
+
+    instruction__push(
+        instruction,
+        "short %d",
+        relative_displacement + (signed_byte)instruction_pointer
+    );
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
-void opcode__cont_jmp_1111_1111(byte first_byte, byte second_byte, struct opcode_context* context) {
+void opcode__cont_jmp_1111_1111__indirect_within_segment(byte first_byte, byte second_byte, struct opcode_context* context) {
+
+    // Indirect within segment
+    // 1111 1111    mod 100 r/m    (DISP-LO)    (DISP-HI)
+
+    /*
+        JMP unconditionally transfers control to the
+        target location. Unlike a CALL instruction, JMP
+        does not save any information on the stack, and
+        no return to the instruction following the JMP is
+        expected. Like CALL, the address of the target
+        operand may be obtained from the instruction
+        itself (direct JMP) or from memory or a register
+        referenced by the instruction (indirect JMP).
+        An intrasegment direct JMP changes the instruction pointer by adding the relative displacement
+        of the target from the JMP instruction. If the
+        assembler can determine that the target is within
+        127 bytes of the JMP, it automatically generates a
+        two-byte form of this instruction called a SHORT
+        JMP; otherwise, it generates a NEAR JMP that
+        can address a target within ±32k. Intrasegment
+        direct JMPS are self-relative and are appropriate
+        in position-independent (dynamically relocatable)
+        routines in which the JMP and its target are in the
+        same segment and are moved together.
+        An intrasegment indirect JMP may be made
+        either through memory or through a 16-bit
+        general register. In the first case, the content of
+        the word referenced by the instruction replaces
+        the instruction pointer. In the second case, the
+        new IP value is taken from the register named in
+        the instruction.
+        An intersegment direct JMP replaces IP and CS
+        with values contained in the instruction. 
+        An intersegment indirect JMP may be made only
+        through memory. The first word of the
+        doubleword pointer referenced by the instruction
+        replaces IP, and the second word replaces CS. 
+    */
+
     (void)first_byte;
-    (void)second_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jmp ");
+
+    int mod = (second_byte >> 6) & 0b11;
+    int r_m = second_byte & 0b111;
+
+    mod_source_only_handlers[mod](1, r_m, context, instruction);
+
+    instruction_list__push(&context->instruction_list);
+
+}
+
+void opcode__cont_jmp_1111_1111__indirect_intersegment(byte first_byte, byte second_byte, struct opcode_context* context) {
+
+    // Indirect intersegment
+    // 1111 1111    mod 101 r/m    (DISP-LO)    (DISP-HI)
+
+    /*
+        JMP unconditionally transfers control to the
+        target location. Unlike a CALL instruction, JMP
+        does not save any information on the stack, and
+        no return to the instruction following the JMP is
+        expected. Like CALL, the address of the target
+        operand may be obtained from the instruction
+        itself (direct JMP) or from memory or a register
+        referenced by the instruction (indirect JMP).
+        An intrasegment direct JMP changes the instruction pointer by adding the relative displacement
+        of the target from the JMP instruction. If the
+        assembler can determine that the target is within
+        127 bytes of the JMP, it automatically generates a
+        two-byte form of this instruction called a SHORT
+        JMP; otherwise, it generates a NEAR JMP that
+        can address a target within ±32k. Intrasegment
+        direct JMPS are self-relative and are appropriate
+        in position-independent (dynamically relocatable)
+        routines in which the JMP and its target are in the
+        same segment and are moved together.
+        An intrasegment indirect JMP may be made
+        either through memory or through a 16-bit
+        general register. In the first case, the content of
+        the word referenced by the instruction replaces
+        the instruction pointer. In the second case, the
+        new IP value is taken from the register named in
+        the instruction.
+        An intersegment direct JMP replaces IP and CS
+        with values contained in the instruction. 
+        An intersegment indirect JMP may be made only
+        through memory. The first word of the
+        doubleword pointer referenced by the instruction
+        replaces IP, and the second word replaces CS. 
+    */
+
+    (void)first_byte;
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jmp ");
+
+    int mod = (second_byte >> 6) & 0b11;
+    int r_m = second_byte & 0b111;
+
+    mod_source_only_handlers[mod](1, r_m, context, instruction);
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__jmp_1110_1010(byte first_byte, struct opcode_context* context) {
+
+    // Direct Intersegment
+    // 1110 1010    IP-lo    IP-hi
+    //              CS-lo    CS-hi
+
+    /*
+        JMP unconditionally transfers control to the
+        target location. Unlike a CALL instruction, JMP
+        does not save any information on the stack, and
+        no return to the instruction following the JMP is
+        expected. Like CALL, the address of the target
+        operand may be obtained from the instruction
+        itself (direct JMP) or from memory or a register
+        referenced by the instruction (indirect JMP).
+        An intrasegment direct JMP changes the instruction pointer by adding the relative displacement
+        of the target from the JMP instruction. If the
+        assembler can determine that the target is within
+        127 bytes of the JMP, it automatically generates a
+        two-byte form of this instruction called a SHORT
+        JMP; otherwise, it generates a NEAR JMP that
+        can address a target within ±32k. Intrasegment
+        direct JMPS are self-relative and are appropriate
+        in position-independent (dynamically relocatable)
+        routines in which the JMP and its target are in the
+        same segment and are moved together.
+        An intrasegment indirect JMP may be made
+        either through memory or through a 16-bit
+        general register. In the first case, the content of
+        the word referenced by the instruction replaces
+        the instruction pointer. In the second case, the
+        new IP value is taken from the register named in
+        the instruction.
+        An intersegment direct JMP replaces IP and CS
+        with values contained in the instruction. 
+        An intersegment indirect JMP may be made only
+        through memory. The first word of the
+        doubleword pointer referenced by the instruction
+        replaces IP, and the second word replaces CS. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jmp ");
+
+    signed_word ip;
+    file_reader__read_word(&context->file_reader, &ip);
+
+    word cs;
+    file_reader__read_word(&context->file_reader, &cs);
+
+    uint32_t function_instruction_pointer = ip;
+    struct label* label = label_list__insert(&context->label_list, function_instruction_pointer, "func");
+
+    if (label == NULL) {
+        return ;
+    }
+
+    instruction__push(
+        instruction,
+        "%u:%s",
+        cs,
+        label->name
+    );
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__ret_1100_0011(byte first_byte, struct opcode_context* context) {
+
+    // Return from CALL
+    // Within segment
+    // 1100 0011
+
+    /*
+        RET (Return) transfers control from a procedure
+        back to the instruction following the CALL that
+        activated the procedure. The assembler generates
+        an intrasegment RET if the programmer has
+        defined the procedure NEAR, or an intersegment
+        RET if the procedure has been defined as FAR.
+        RET pops the word at the top of the stack
+        (pointed to by register SP) into the instruction
+        pointer and increments SP by two. If RET is
+        intersegment, the word at the new top of stack is
+        popped into the CS register, and SP is again
+        incremented by two. If an optional pop value has
+        been specified, RET adds that value to SP. This
+        feature may be used to discard parameters pushed
+        onto the stack before the execution of the CALL
+        instruction
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "ret ");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__ret_1100_0010(byte first_byte, struct opcode_context* context) {
+
+    // Return from CALL
+    // Within seg adding immed to SP
+    // 1100 0010    data-lo    data-hi
+
+    /*
+        RET (Return) transfers control from a procedure
+        back to the instruction following the CALL that
+        activated the procedure. The assembler generates
+        an intrasegment RET if the programmer has
+        defined the procedure NEAR, or an intersegment
+        RET if the procedure has been defined as FAR.
+        RET pops the word at the top of the stack
+        (pointed to by register SP) into the instruction
+        pointer and increments SP by two. If RET is
+        intersegment, the word at the new top of stack is
+        popped into the CS register, and SP is again
+        incremented by two. If an optional pop value has
+        been specified, RET adds that value to SP. This
+        feature may be used to discard parameters pushed
+        onto the stack before the execution of the CALL
+        instruction
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "ret ");
+
+    word data;
+    file_reader__read_word(&context->file_reader, &data);
+
+    instruction__push(
+        instruction,
+        "%d",
+        data
+    );
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__ret_1100_1011(byte first_byte, struct opcode_context* context) {
+
+    // Return from CALL
+    // Intersegment
+    // 1100 1011
+
+    /*
+        RET (Return) transfers control from a procedure
+        back to the instruction following the CALL that
+        activated the procedure. The assembler generates
+        an intrasegment RET if the programmer has
+        defined the procedure NEAR, or an intersegment
+        RET if the procedure has been defined as FAR.
+        RET pops the word at the top of the stack
+        (pointed to by register SP) into the instruction
+        pointer and increments SP by two. If RET is
+        intersegment, the word at the new top of stack is
+        popped into the CS register, and SP is again
+        incremented by two. If an optional pop value has
+        been specified, RET adds that value to SP. This
+        feature may be used to discard parameters pushed
+        onto the stack before the execution of the CALL
+        instruction
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "retf");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__ret_1100_1010(byte first_byte, struct opcode_context* context) {
+
+    // Return from CALL
+    // Intersegment adding immediate to SP
+    // 1100 1011
+
+    /*
+        RET (Return) transfers control from a procedure
+        back to the instruction following the CALL that
+        activated the procedure. The assembler generates
+        an intrasegment RET if the programmer has
+        defined the procedure NEAR, or an intersegment
+        RET if the procedure has been defined as FAR.
+        RET pops the word at the top of the stack
+        (pointed to by register SP) into the instruction
+        pointer and increments SP by two. If RET is
+        intersegment, the word at the new top of stack is
+        popped into the CS register, and SP is again
+        incremented by two. If an optional pop value has
+        been specified, RET adds that value to SP. This
+        feature may be used to discard parameters pushed
+        onto the stack before the execution of the CALL
+        instruction
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "retf ");
+
+    word data;
+    file_reader__read_word(&context->file_reader, &data);
+
+    instruction__push(
+        instruction,
+        "%d",
+        data
+    );
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__je_jz(byte first_byte, struct opcode_context* context) {
@@ -3075,10 +3494,10 @@ void opcode__je_jz(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "je ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "je ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3091,12 +3510,12 @@ void opcode__je_jz(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3107,10 +3526,10 @@ void opcode__jl_jnge(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jl ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jl ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3123,12 +3542,12 @@ void opcode__jl_jnge(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3139,10 +3558,10 @@ void opcode__jle_jng(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jle ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jle ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3155,12 +3574,12 @@ void opcode__jle_jng(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3171,10 +3590,10 @@ void opcode__jb_jnae(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jb ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jb ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3187,12 +3606,12 @@ void opcode__jb_jnae(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3203,10 +3622,10 @@ void opcode__jbe_jna(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jbe ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jbe ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3219,12 +3638,12 @@ void opcode__jbe_jna(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3235,10 +3654,10 @@ void opcode__jp_jpe(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jp ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jp ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3251,12 +3670,12 @@ void opcode__jp_jpe(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3267,10 +3686,10 @@ void opcode__jo(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jo ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jo ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3283,12 +3702,12 @@ void opcode__jo(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3299,10 +3718,10 @@ void opcode__js(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "js ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "js ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3315,12 +3734,12 @@ void opcode__js(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3331,10 +3750,10 @@ void opcode__jne_jnz(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jnz ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jnz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3347,12 +3766,12 @@ void opcode__jne_jnz(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3363,10 +3782,10 @@ void opcode__jnl_jge(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jnl ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jnl ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3379,12 +3798,12 @@ void opcode__jnl_jge(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3395,10 +3814,10 @@ void opcode__jnle_jg(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jg ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jg ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3411,12 +3830,12 @@ void opcode__jnle_jg(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3427,10 +3846,10 @@ void opcode__jnb_jae(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jnb ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jnb ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3443,12 +3862,12 @@ void opcode__jnb_jae(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3459,10 +3878,10 @@ void opcode__jnbe_ja(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "ja ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "ja ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3475,12 +3894,12 @@ void opcode__jnbe_ja(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3491,10 +3910,10 @@ void opcode__jnp_jpo(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jnp ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jnp ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3507,12 +3926,12 @@ void opcode__jnp_jpo(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3523,10 +3942,10 @@ void opcode__jno(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jno ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jno ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3539,12 +3958,12 @@ void opcode__jno(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3555,10 +3974,10 @@ void opcode__jns(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jns ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jns ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3571,12 +3990,12 @@ void opcode__jns(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3587,10 +4006,10 @@ void opcode__loop(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "loop ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "loop ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3603,12 +4022,12 @@ void opcode__loop(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3619,10 +4038,10 @@ void opcode__loopz_loope(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "loopz ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "loopz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3635,12 +4054,12 @@ void opcode__loopz_loope(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3651,10 +4070,10 @@ void opcode__loopnz_loopne(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "loopnz ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "loopnz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3667,12 +4086,12 @@ void opcode__loopnz_loopne(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3683,10 +4102,10 @@ void opcode__jcxz(byte first_byte, struct opcode_context* context) {
 
     (void)first_byte;
 
-    struct instruction  instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "jcxz ");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "jcxz ");
 
     signed_byte  signed_increment_to_instruction_pointer = 0;
     file_reader__read_byte(&context->file_reader, &signed_increment_to_instruction_pointer);
@@ -3699,109 +4118,478 @@ void opcode__jcxz(byte first_byte, struct opcode_context* context) {
     }
 
     instruction__push(
-        &instruction,
+        instruction,
         "%s",
         label->name
     );
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
 void opcode__int_1100_1101(byte first_byte, struct opcode_context* context) {
+
+    // Interrupt
+    // Type specified
+    // 1100 1101    DATA-8
+
+    /*
+        INT (Interrupt) activates the interrupt procedure
+        specified by the interrupt-type operand. INT
+        decrements the stack pointer by two, pushes the
+        flags onto the stack, and clears the trap (TF) and
+        interrupt-enable (IF) flags to disable single-step
+        and maskable interrupts. The flags are stored in
+        the format used by the PUSHF instruction. SP is
+        decremented again by two, and the es register is
+        pushed onto the stack. The address of the interrupt pointer is calculated by multiplying
+        interrupt-type by four; the second word of the interrupt pointer replaces CS. SP again is
+        decremented by two, and IP is pushed onto the
+        stack and is replaced by the first word of the interrupt pointer. If interrupt-type = 3, the assembler
+        generates a short (1 byte) form of the instruction,
+        known as the breakpoint interrupt. 
+        Software interrupts can be used as "supervisor
+        calls," i.e., requests for service from an operating
+        system. A different interrupt-type can be used for
+        each type of service that the operating system
+        could supply for an application program. Software interrupts also may be used to check out
+        interrupt service procedures written for hardwareinitiated interrupts. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "int ");
+
+    byte interrupt_type;
+    file_reader__read_byte(&context->file_reader, &interrupt_type);
+
+    instruction__push(
+        instruction,
+        "%u",
+        interrupt_type
+    );
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__int_1100_1100(byte first_byte, struct opcode_context* context) {
+
+    // Interrupt
+    // Type 3
+    // 1100 1100
+
+    /*
+        INT (Interrupt) activates the interrupt procedure
+        specified by the interrupt-type operand. INT
+        decrements the stack pointer by two, pushes the
+        flags onto the stack, and clears the trap (TF) and
+        interrupt-enable (IF) flags to disable single-step
+        and maskable interrupts. The flags are stored in
+        the format used by the PUSHF instruction. SP is
+        decremented again by two, and the es register is
+        pushed onto the stack. The address of the interrupt pointer is calculated by multiplying
+        interrupt-type by four; the second word of the interrupt pointer replaces CS. SP again is
+        decremented by two, and IP is pushed onto the
+        stack and is replaced by the first word of the interrupt pointer. If interrupt-type = 3, the assembler
+        generates a short (1 byte) form of the instruction,
+        known as the breakpoint interrupt. 
+        Software interrupts can be used as "supervisor
+        calls," i.e., requests for service from an operating
+        system. A different interrupt-type can be used for
+        each type of service that the operating system
+        could supply for an application program. Software interrupts also may be used to check out
+        interrupt service procedures written for hardwareinitiated interrupts. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "int3");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__into(byte first_byte, struct opcode_context* context) {
+
+    // Interrupt on overflow
+    // 1100 1110
+
+    /*
+        INTO (Interrupt on Overflow) generates a software interrupt if the overflow flag (OF) is set;
+        otherwise control proceeds to the following
+        instruction without activating an interrupt procedure.
+        INTO addresses the target interrupt procedure (its type is 4) through the interrupt pointer
+        at location IOH; it clears the TF and IF flags and
+        otherwise operates like INT. INTO may be written following an arithmetic or logical operation to
+        activate an interrupt procedure if overflow occurs. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "into");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__iret(byte first_byte, struct opcode_context* context) {
+
+    // Interrupt return
+    // 1100 1111
+
+    /*
+        IRET (Interrupt Return) transfers control back to
+        the point of interruption by popping IP, CS and
+        the flags from the stack. IRET thus affects all
+        flags by restoring them to previously saved
+        values. IRET is used to exit any interrupt
+        procedure, whether activated by hardware or
+        software. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "iret");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__clc(byte first_byte, struct opcode_context* context) {
+
+    // Clear carry
+    // 1111 1000
+
+    /*
+        CLC (Clear Carry flag) zeroes the carry flag (CF)
+        and affects no other flags. It (and CMC and STC)
+        is useful in conjunction with the RCL and RCR
+        instructions. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "clc");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__cmc(byte first_byte, struct opcode_context* context) {
+
+    // Complement carry
+    // 1111 0101
+
+    /*
+        CMC (Complement Carry flag) "toggles" CF to
+        its opposite state and affects no other flags. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "cmc");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__stc(byte first_byte, struct opcode_context* context) {
+
+    // Set carry
+    // 1111 1001
+
+    /*
+        STC (Set Carry flag) sets CF to 1 and affects no other flags.  
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "stc");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__cld(byte first_byte, struct opcode_context* context) {
+
+    // Clear direction
+    // 1111 1100
+
+    /*
+        CLD (Clear Direction flag) zeroes DF causing the
+        string instructions to auto-increment the SI
+        and/or DI index registers. CLD does not affect
+        any other flags. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "cld");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__std(byte first_byte, struct opcode_context* context) {
+
+    // Set direction
+    // 1111 1101
+
+    /*
+        STD (Set Direction flag) sets DF to 1 causing the
+        string instructions to auto-decrement the SI
+        and/or DI index registers. STD does not affect
+        any other flags. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "std");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__cli(byte first_byte, struct opcode_context* context) {
+
+    // Clear interrupt
+    // 1111 1010
+
+    /*
+        CLI (Clear Interrupt-enable flag) zeroes IF.
+        When the interrupt-enable flag is cleared, the
+        8086 and 8088 do not recognize an external interrupt request that appears on the INTR line; in
+        other words maskable interrupts are disabled. A
+        non-maskable interrupt appearing on the NMI
+        line, however, is honored, as is a software interrupt. CLI does not affect any other flags. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "cli");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__sti(byte first_byte, struct opcode_context* context) {
+
+    // Set interrupt
+    // 1111 1011
+
+    /*
+        STI (Set Interrupt-enable flag) sets IF to 1, enabling processor recognition of maskable interrupt requests appearing on the INTR line. Note
+        however, that a pending interrupt will not actually be recognized until the instruction following
+        STI has executed. STI does not affect any other flags. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "sti");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__hlt(byte first_byte, struct opcode_context* context) {
+
+    // Halt
+    // 1111 0100
+
+    /*
+        HLT (Halt) causes the 8086/8088 to enter the halt
+        state. The processor leaves the halt state upon
+        activation of the RESET line, upon receipt of a
+        non-maskable interrupt request on NMI, or, if
+        interrupts are enabled, upon receipt of a
+        maskable interrupt request on INTR. HL T does
+        not affect any flags. It may be used as an alternative to an endless software loop in situations
+        where a program must wait for an interrupt. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "hlt");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__wait(byte first_byte, struct opcode_context* context) {
+
+    // Wait
+    // 1001 1011
+
+    /*
+        WAIT causes the CPU to enter the wait state
+        while its TEST line is not active. WAIT does not
+        affect any flags. This instruction is described
+        more completely in section 2.5. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "wait");
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__esc(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Escape (to external device)
+    // 1101 1xxx    mod yyy r_m    (DISP-LO)    (DISP-HI)
+
+    /*
+        ESC (Escape) provides a means for an external
+        processor. to obtain an opcode and possibly a
+        memory operand from the 8086 or 8088. The
+        external opcode is a 6-bit immediate constant that
+        the assembler encodes in the machine instruction
+        it builds (see table 2-26). An external processor
+        may monitor the system bus and capture this
+        opcode when the ESC is fetched. If the source
+        operand is a register, the processor does nothing.
+        If the source operand is a memory variable, the
+        processor obtains the operand from memory and
+        discards it. An external processor may capture the
+        memory operand when the processor reads it
+        from memory. 
+    */
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "esc ");
+
+    int xxx = first_byte & 0b111;
+
+    byte second_byte;
+    file_reader__read_byte(&context->file_reader, &second_byte);
+
+    int mod = (second_byte >> 6) & 0b11;
+    int yyy = (second_byte >> 3) & 0b111;
+    int r_m = second_byte & 0b111;
+
+    int opcode_for_coprocessor = (xxx << 3) | yyy;
+
+    instruction__push(
+        instruction,
+        "%u, ",
+        opcode_for_coprocessor
+    );
+
+    assert(false && "not implemented, nasm doesn't recognize 'esc', so can't build a test example");
+
+    mod_handlers[mod](1, 0, AX, r_m, context, instruction);
+
+
+    instruction_list__push(&context->instruction_list);
+
 }
 
 void opcode__lock(byte first_byte, struct opcode_context* context) {
+
+    // Bus lock prefix
+    // 1111 0000
+
+    /*
+        LOCK is a one-byte prefix that causes the
+        8086/8088 (configured in maximum mode) to
+        assert its bus LOCK signal while the following
+        instruction executes. LOCK does not affect any
+        flags. See section 2.5 for more information on
+        LOCK. 
+    */
+
     (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+    instruction__push(instruction, "lock ");
+
 }
 
 void opcode__segment(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
+
+    // Override prefix
+    // 001 reg 110
+
+    /*
+        The Segment Override Prefix says that if we want to use some other segment register
+        than the default segment for a particular code, then it is possible.
+        It can simply be one by mentioning the segment that is to be used before the address location
+        or the offset register containing that address. By doing so,
+        the machine, i.e. the 8086 microprocessor, while calculating the effective address
+        will consider the mentioned segment for calculating the effective address rather than
+        opting for the default one.
+    */
+
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
+
+    uint32_t instruction_pointer = file_reader__read_bytes_so_far(&context->file_reader) - 1;
+    instruction__set_instruction_pointer(instruction, instruction_pointer);
+
+    int reg = (first_byte >> 3) & 0b11;
+
+    instruction__set_segment_override_prefix(instruction, (enum segment_registries) reg);
+
 }
 
 void opcode__null(byte first_byte, struct opcode_context* context) {
@@ -3817,42 +4605,18 @@ void opcode__cont_null(byte first_byte, byte second_byte, struct opcode_context*
     context->opcode_error_handler("in 'opcode__null': not used instruction");
 }
 
-void opcode__ss(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
-}
-
-void opcode__cs(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
-}
-
-void opcode__ds(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
-}
-
-void opcode__es(byte first_byte, struct opcode_context* context) {
-    (void)first_byte;
-    (void)context;
-    assert(false && "todo: implement");
-}
-
 void opcode__nop(byte first_byte, struct opcode_context* context) {
 
     // does nothing, for example: xchg ax, ax
 
     (void)first_byte;
 
-    struct instruction instruction;
+    struct instruction* instruction = instruction_list__get(&context->instruction_list);
 
-    instruction__create(&instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
-    instruction__push(&instruction, "nop");
+    instruction__set_instruction_pointer(instruction, file_reader__read_bytes_so_far(&context->file_reader) - 1);
+    instruction__push(instruction, "nop");
 
-    instruction_list__push(&context->instruction_list, instruction);
+    instruction_list__push(&context->instruction_list);
 
 }
 
@@ -3972,8 +4736,8 @@ void opcode__1111_1111(byte first_byte, struct opcode_context* context) {
         opcode__cont_dec_1111_111x,
         opcode__cont_call_1111_1111,
         opcode__cont_call_1111_1111,
-        opcode__cont_jmp_1111_1111,
-        opcode__cont_jmp_1111_1111,
+        opcode__cont_jmp_1111_1111__indirect_within_segment,
+        opcode__cont_jmp_1111_1111__indirect_intersegment,
         opcode__cont_push_1111_1111,
         opcode__cont_null
     };

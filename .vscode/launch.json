@@ -10,7 +10,8 @@
             // "args": ["${workspaceFolder}/asm/listing_0039_more_movs.original_bin"],
             // "args": ["${workspaceFolder}/asm/listing_0041_add_sub_cmp_jnz.original_bin"],
             // "args": ["${workspaceFolder}/asm/listing_0042_completionist_decode.original_bin"],
-            "args": ["${workspaceFolder}/asm/test.original_bin"],
+            // "args": ["${workspaceFolder}/asm/test.original_bin"],
+            "args": ["${workspaceFolder}/8086-ASSEMBLY-LANGUAGE-PROGRAMS/Expression/fibonacci2"],
             // "args": ["${workspaceFolder}/asm/listing_0038_many_register_mov.original_bin"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}"

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     printf("; %s bytes:\n", argv[1]);
     while(file_reader__eof_reached(&reader) == false) {
         byte b;
-        file_reader__read_byte(&reader, &b, error_handler);
+        file_reader__read_byte(&reader, &b);
 
         printf("%d: ", byte_index++);
         for (int i = 0; i < 8; ++i) {

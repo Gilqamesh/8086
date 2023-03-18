@@ -23,11 +23,7 @@ struct label* label_list__insert(struct label_list* self, uint32_t instruction_p
 
     while (*current_label_pointer && instruction_pointer >= (*current_label_pointer)->instruction_pointer) {
         if ((*current_label_pointer)->instruction_pointer == instruction_pointer) {
-            if (strcmp(label_name, (*current_label_pointer)->name) == 0) {
-                return (*current_label_pointer);
-            }
-            self->error_handler(LABEL_LIST_ERROR__LABEL_ALREADY_EXISTS, "label_list__insert: label '%s' already exists under the provided instruction pointer '%d'", label_name, instruction_pointer);
-            return NULL;
+            return *current_label_pointer;
         }
         current_label_pointer = &(*current_label_pointer)->next;
     }
